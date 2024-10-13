@@ -1,0 +1,1 @@
+Marker used to identify the root directory.

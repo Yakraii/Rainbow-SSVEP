@@ -1,0 +1,34 @@
+# 脑电帽配置
+board:
+  ip_address: "192.168.137.24" # IP地址
+  ip_port: 9527 # 端口号
+  timeout: 1000 # 超时时间
+  board_id: 5 #5/16/532/564
+  duration: 10 # 采集时长
+
+# 通道配置
+columns:
+- package_num_channel  # 数据包编号
+- channel_1
+- channel_2
+- channel_3
+- channel_4
+- channel_5
+- channel_6
+- channel_7
+- channel_8
+- accel_channel_9
+- accel_channel_10
+- accel_channel_11
+- point_position
+- board_marker
+- other_channel_14
+- other_channel_15
+- other_channel_16
+- other_channel_17
+- other_channel_18
+- analog_channel_19
+- analog_channel_20
+- timestamp # 时间戳
+- marker # 标记
+- other
