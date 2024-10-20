@@ -8,7 +8,7 @@ from pynput import keyboard
 import yaml
 
 from pprint import pprint
-from src.module import getPath
+from module import getPath
 
 # 读取配置
 root_path = getPath.getRootPath()
