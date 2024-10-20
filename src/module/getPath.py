@@ -5,7 +5,7 @@ def getRootPath():
     current_file = Path(__file__).resolve()
     # 逐级向上查找，直到找到包含 README.md 的目录
     project_root = current_file
-    while not (project_root / 'root.txt').exists() and project_root != project_root.parent:
+    while not (project_root / 'root/').exists() and project_root != project_root.parent:
         project_root = project_root.parent
     # print("Module/getPath.py: Find root:", project_root)
     return project_root
