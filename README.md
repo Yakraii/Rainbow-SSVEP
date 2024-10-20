@@ -10,7 +10,8 @@ Rainbow-SSVEP 是一个用于研究稳态视觉诱发电位 (SSVEP) 的项目。
 - [许可证](#许可证)
 
 ## 注意事项
-部分 Python 包需要使用我们提供的版本。请确保在 `PYTHONPATH` 中添加 `src` 目录。你可以在 `.pth` 文件中添加以下内容：
+部分 Python 包 (例如brainflow) 需要使用我们提供的版本。
+请确保在 `PYTHONPATH` 中添加 `src` 目录。你可以在 `.pth` 文件中添加以下内容：
 
 ```text
 /path/to/Rainbow-SSVEP/src
