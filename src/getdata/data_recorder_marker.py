@@ -6,7 +6,7 @@ from brainflow.board_shim import BoardShim, BrainFlowInputParams
 from brainflow.data_filter import DataFilter, FilterTypes, DetrendOperations, WindowOperations, AggOperations
 from pynput import keyboard
 import yaml
-
+from matplotlib import pyplot as plt
 from pprint import pprint
 from module import getPath
 
@@ -46,7 +46,6 @@ def init():
         print('板卡已准备')
     board.start_stream()  # 开始数据流
 
-
 def on_press(key):
     try:
         # 创建键盘键与标记的映射字典
@@ -75,6 +74,37 @@ def on_press(key):
     except AttributeError:
         pass
 
+def draw():
+    count = 0
+    fig, axs = plt.subplots(8, 1, figsize=(10, 12), sharex=True)  # 创建8个子图
+    for ax in axs:
+        ax.set_ylim(-500, 500)
+        ax.axis('off')
+
+    flag=time.time()
+    start_time = time.time()
+    # 持续时间内画图
+    while time.time() - start_time < duration:
+        if(time.time()-flag>=1):
+            print(time.time() - flag, " 更新绘图")
+            for ax in axs:
+                ax.cla()  # 清除之前的绘图
+
+            # 获取实时数据
+            current_data = board.get_current_board_data(1000)
+            channels = board.get_eeg_channels(board_id)
+            for i, channel in enumerate(channels):
+                data_x = [j for j in range(len(current_data[channel]))]
+                data_y = current_data[channel]
+                # 数据预处理：去趋势和滤波
+                DataFilter.detrend(data_y, DetrendOperations.CONSTANT.value)  # 去趋势
+                DataFilter.perform_bandpass(data_y, 1000, 3.0, 45.0, 4, FilterTypes.BUTTERWORTH.value, 0)  # 带通滤波
+                DataFilter.perform_bandstop(data_y, 1000, 48.0, 52.0, 2, FilterTypes.BUTTERWORTH.value, 0)  # 带阻滤波（50Hz工频）
+                DataFilter.perform_bandstop(data_y, 1000, 58.0, 62.0, 2, FilterTypes.BUTTERWORTH.value, 0)  # 带阻滤波（60Hz工频）
+                axs[i].plot(data_x, data_y)  # 绘制每个通道的数据
+            plt.draw() # 绘制图形
+            plt.pause(0.05)  # 更新图形
+            flag=time.time()
 
 def main():
     # 获取板卡描述信息
@@ -84,10 +114,9 @@ def main():
     # 创建键盘监听器，在按下键时调用 on_press
     listener = keyboard.Listener(on_press=on_press)
     listener.start()  # 在后台启动监听器
-    time.sleep(duration)  # 持续时间
-    # 继续进行其他任务（例如读取 EEG 数据）
+    draw()
     try:
-        # 处理数据并保存到文件
+        # 保存到文件
         data = board.get_board_data()
         df = pd.DataFrame(data.T, columns=columns)
         df.to_csv(data_path, index=False)
