@@ -86,12 +86,14 @@ def draw():
     # 持续时间内画图
     while time.time() - start_time < duration:
         if(time.time()-flag>=1):
-            print(time.time() - flag, " 更新绘图")
+            # print(time.time() - flag, " 更新绘图")
             for ax in axs:
                 ax.cla()  # 清除之前的绘图
 
             # 获取实时数据
             current_data = board.get_current_board_data(1000)
+            # 打印数据
+            # pprint(current_data) 
             channels = board.get_eeg_channels(board_id)
             for i, channel in enumerate(channels):
                 data_x = [j for j in range(len(current_data[channel]))]
