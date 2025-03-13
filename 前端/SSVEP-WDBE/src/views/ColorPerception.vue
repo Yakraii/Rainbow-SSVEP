@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div class="Detect">
     <h1>颜色感知</h1>
 
@@ -108,5 +108,227 @@ const stopDetection = () => {
   button {
     margin: 10px;
   }
+}
+</style> -->
+
+
+<template>
+  <div class="Detect">
+    <!-- 设置页面 -->
+    <div class="setup-page" v-if="!isRunning">
+      <h2>颜色感知检测</h2>
+      <form @submit.prevent="startRun">
+        <!-- 频率输入表格 -->
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>频率 (Hz)</th>
+                <th>文本</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(box, index) in boxes" :key="index">
+                <td>{{ index + 1 }}</td>
+                <td><input type="number" v-model="box.frequency" placeholder="频率" min="1" /></td>
+                <td><input type="text" v-model="box.text" placeholder="文本" /></td>
+                <td><button type="button" @click="removeBox(index)">删除</button></td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4">
+                  <button type="button" @click="addBox">添加</button>
+                  <button type="submit">开始</button>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <!-- 额外设置 -->
+        <div class="settings">
+          <label><input type="checkbox" v-model="boldFont" /> 加粗字体</label>
+          <label><input type="checkbox" v-model="flickerTexts" /> 闪烁文本</label>
+          <label><input type="checkbox" v-model="flickerBoxes" /> 闪烁盒子</label>
+          <label>持续时间 (秒): <input type="number" v-model="duration" placeholder="秒" min="1" /></label>
+        </div>
+      </form>
+    </div>
+
+    <!-- 刺激页面 -->
+    <div class="stim-page" v-if="isRunning" @click="stopRun">
+      <div class="fullscreen">
+        <div
+          v-for="(box, index) in boxes"
+          :key="index"
+          class="stimulus"
+          :style="{
+            width: `${100 / cols}%`,
+            height: `${100 / rows}%`,
+            fontWeight: boldFont ? 'bold' : 'normal',
+            fontSize: `${fontSize}px`,
+            backgroundColor: flickerBoxes ? (box.isBlack ? 'black' : 'white') : 'transparent',
+            color: flickerTexts ? (box.isBlack ? 'black' : 'white') : 'white'
+          }"
+        >
+          {{ box.text }}
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+
+const isRunning = ref(false);
+const boxes = ref([]);
+const intervals = ref([]);
+
+// 设置参数
+const boldFont = ref(false);
+const flickerTexts = ref(true);
+const flickerBoxes = ref(false);
+const duration = ref(null);
+
+// 屏幕分割计算
+const rows = computed(() => Math.ceil(Math.sqrt(boxes.value.length)));
+const cols = computed(() => Math.ceil(boxes.value.length / rows.value));
+const fontSize = computed(() => Math.min(window.innerWidth / cols.value, window.innerHeight / rows.value) * 0.6);
+
+// 添加盒子（默认频率 7Hz，文本 A, B, C...）
+const addBox = () => {
+  boxes.value.push({
+    frequency: 7,
+    text: String.fromCharCode(65 + boxes.value.length),
+    isBlack: true,
+  });
+};
+
+// 删除盒子
+const removeBox = (index) => {
+  boxes.value.splice(index, 1);
+};
+
+// 开始刺激
+// const startRun = () => {
+//   if (boxes.value.length === 0) return;
+//   isRunning.value = true;
+
+//   intervals.value.forEach(clearInterval);
+//   intervals.value = [];
+
+//   if (flickerTexts.value || flickerBoxes.value) {
+//     boxes.value.forEach((box) => {
+//       const interval = setInterval(() => {
+//         box.isBlack = !box.isBlack;
+//       }, 1000 / box.frequency / 2);
+//       intervals.value.push(interval);
+//     });
+//   }
+
+//   if (duration.value) {
+//     setTimeout(stopRun, duration.value * 1000);
+//   }
+// };
+const startRun = () => {
+  if (boxes.value.length === 0) return;
+  isRunning.value = true;
+
+  intervals.value.forEach(clearInterval);
+  intervals.value = [];
+
+  if (flickerTexts.value || flickerBoxes.value) {
+    boxes.value.forEach((box) => {
+      const interval = setInterval(() => {
+        box.isBlack = !box.isBlack;
+      }, 1000 / (box.frequency * 2));
+      intervals.value.push(interval);
+    });
+  }
+
+  // 修正持续时间设置，确保所有间隔清除
+  if (duration.value && duration.value > 0) {
+    const durationTimeout = setTimeout(() => {
+      stopRun();
+      clearTimeout(durationTimeout);
+    }, duration.value * 1000);
+  }
+};
+
+// 停止刺激
+const stopRun = () => {
+  intervals.value.forEach(clearInterval);
+  intervals.value = [];
+  isRunning.value = false;
+};
+
+// 监听窗口大小变化，确保字体大小自适应
+onMounted(() => {
+  window.addEventListener("resize", () => {
+    isRunning.value && startRun();
+  });
+});
+</script>
+
+<style scoped>
+.Detect {
+  text-align: center;
+}
+
+/* 表格居中 */
+.table-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 60%;
+  text-align: center;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+tfoot td {
+  text-align: center;
+}
+
+/* 设置项居中，每行一个 */
+.settings {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* 全屏模式 */
+.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: black;
+  overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* 文字刺激 */
+.stimulus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  user-select: none;
 }
 </style>
