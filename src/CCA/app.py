@@ -29,7 +29,7 @@ def classify():
         # 检查子进程是否成功完成
         if result.returncode != 0:
             return jsonify({
-                "error": "Subprocess failed",
+                "error": "子进程失败。",
                 "stderr": result.stderr
             }), 500
 
@@ -37,14 +37,14 @@ def classify():
         output = result.stdout.strip()  # 去除多余的空格和换行符
         if not output:
             return jsonify({
-                "error": "Subprocess returned empty output"
+                "error": "返回了空白的输出。"
             }), 500
 
         try:
             result_data = json.loads(output)
         except json.JSONDecodeError as e:
             return jsonify({
-                "error": "Failed to parse subprocess output as JSON",
+                "error": "无法将子进程的输出解析为JSON",
                 "output": output,
                 "exception": str(e)
             }), 500
