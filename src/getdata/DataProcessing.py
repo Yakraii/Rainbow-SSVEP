@@ -37,7 +37,7 @@ def process_data(channels, freq): # 处理数据
     for ch in range(8):
         channel_data = channels[:, ch]
         DataFilter.detrend(channel_data, DetrendOperations.CONSTANT.value)
-        DataFilter.perform_bandpass(channel_data, origin_sampling_rate, 3.0, 45.0, 4, FilterTypes.BUTTERWORTH.value, 0)
+        DataFilter.perform_bandpass(channel_data, origin_sampling_rate, 3.0, 25.0, 4, FilterTypes.BUTTERWORTH.value, 0)
         DataFilter.perform_bandstop(channel_data, origin_sampling_rate, 48.0, 52.0, 2, FilterTypes.BUTTERWORTH.value, 0)
         DataFilter.perform_bandstop(channel_data, origin_sampling_rate, 58.0, 62.0, 2, FilterTypes.BUTTERWORTH.value, 0)
         downsampled_ch = DataFilter.perform_downsampling(channel_data, 4, AggOperations.MEAN.value)
@@ -73,10 +73,10 @@ def save_data(all_freq_data):
     scipy.io.savemat(os.path.join(prodata_path, args.file_name) + ".mat", {'processed_data': output})
 
 if __name__ == '__main__':
-    # 接收两个个参数：csv文件地址、频率1
+    # 接收两个个参数：csv文件地址、频率
     parser = argparse.ArgumentParser(description="Data processing script.")
     parser.add_argument('--file_name', type=str, default="", help='Path to the rawDa CSV file')
-    parser.add_argument('--frequencies', type=float, nargs='*', default=[9.75,14.25], help='List of frequencies')
+    parser.add_argument('--frequencies', type=float, nargs='*', default=[7.5, 9.75, 10.25, 12.25, 14.25], help='List of frequencies')
     
     args = parser.parse_args()
     file_path = os.path.join(rawdata_path, args.file_name) # 文件路径
@@ -91,13 +91,15 @@ if __name__ == '__main__':
     n_segments = 5  # 段数
     required_samples = target_sampling_rate * total_duration  # 5000
 
-    all_freq_data = {}  # 存储所有频率数据
 
+    all_freq_data = {}  # 存储所有频率数据
     data = read_csv(file_path)  # 读取CSV文件
+    
     # 处理每个频率对应的标记
-    # for marker, freq in [(1, frequency[0]), (2, frequency[1]), (3, frequency[2]), (4, frequency[3])]:
-    for marker, freq in [(1, frequency[0]), (2, frequency[1])]:
-        channels = combine_data(data, marker) # 合并数据，返回通道数据
+    for i in range(5):
+        marker = i + 1
+        freq = frequency[i]
+        channels = combine_data(data, marker) # 裁剪标签数据
         processed_data = process_data(channels, freq) # 处理数据
         # 保存频率数据
         if freq not in all_freq_data:
