@@ -37,7 +37,7 @@ def process_data(channels, freq): # 处理数据
     for ch in range(8):
         channel_data = channels[:, ch]
         DataFilter.detrend(channel_data, DetrendOperations.CONSTANT.value)
-        DataFilter.perform_bandpass(channel_data, origin_sampling_rate, 3.0, 25.0, 4, FilterTypes.BUTTERWORTH.value, 0)
+        DataFilter.perform_bandpass(channel_data, origin_sampling_rate, 3.0, 45.0, 4, FilterTypes.BUTTERWORTH.value, 0)
         DataFilter.perform_bandstop(channel_data, origin_sampling_rate, 48.0, 52.0, 2, FilterTypes.BUTTERWORTH.value, 0)
         DataFilter.perform_bandstop(channel_data, origin_sampling_rate, 58.0, 62.0, 2, FilterTypes.BUTTERWORTH.value, 0)
         downsampled_ch = DataFilter.perform_downsampling(channel_data, 4, AggOperations.MEAN.value)

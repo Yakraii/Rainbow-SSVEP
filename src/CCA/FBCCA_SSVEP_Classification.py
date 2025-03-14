@@ -30,7 +30,7 @@ parser.add_argument('--ratio', type=int, default=-1, help="-1(Training-free),0(N
 opt = parser.parse_args()
 # 设置人数、折叠为1
 opt.ws = 4.0
-opt.Nh = 10
+opt.Nh = 25
 opt.Fs = 250
 opt.Ns = 1
 opt.Kf = 1

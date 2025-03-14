@@ -61,7 +61,7 @@ class getSSVEP12Intra(Dataset):
     # 加载单个被试的数据
     def load_Data(self):
         # subjectfile = scipy.io.loadmat(f'data/Dial/S{self.subject}.mat')  # 加载.mat文件
-        subjectfile = scipy.io.loadmat('C:/Users/f/Desktop/CCA/data/Dial/All.mat')  # 加载.mat文件
+        subjectfile = scipy.io.loadmat('data/data_processed/merged_data.mat')  # 加载.mat文件
         # print(subjectfile.keys())
         samples = subjectfile['processed_data']  # 获取EEG数据 (12, 8, 1024, 15)
         # samples = samples[:2, :, :, :] # 将samples中的第一维删至 (2, 8, 1024, 15)
