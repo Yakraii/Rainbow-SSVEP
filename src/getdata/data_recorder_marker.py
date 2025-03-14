@@ -27,6 +27,7 @@ print("data_path: ",data_path)
 
 # 设置板参数
 param = BrainFlowInputParams()
+param.sample_rate = 256
 param.ip_address = config_board['ip_address']
 param.ip_port = config_board['ip_port']
 param.timeout = config_board['timeout']
@@ -50,8 +51,8 @@ def on_press(key):
     try:
         # 创建键盘键与标记的映射字典
         keydict = {
-            keyboard.Key.enter: (66666, 'Pressed: enter  插入标记 66666'),
-            keyboard.Key.f1: (1, 'Pressed: F1  插入标记 A(1)'),
+            keyboard.Key.enter: (1, 'Pressed: enter  插入标记 66666'),
+            keyboard.Key.f1: (666, 'Pressed: F1  插入标记 A(1)'),
             keyboard.Key.f2: (2, 'Pressed: F2  插入标记 B(2)'),
             keyboard.Key.f3: (3, 'Pressed: F3  插入标记 C(3)'),
             keyboard.Key.f4: (4, 'Pressed: F4  插入标记 D(4)'),
@@ -90,13 +91,14 @@ def draw():
             for ax in axs:
                 ax.cla()  # 清除之前的绘图
 
-            # 获取实时数据
+            # 获取实时数据  
             current_data = board.get_current_board_data(1000)
             # 打印数据
-            # pprint(current_data) 
+            print(current_data) 
             channels = board.get_eeg_channels(board_id)
             for i, channel in enumerate(channels):
                 data_x = [j for j in range(len(current_data[channel]))]
+                print("data_x: ",data_x)
                 data_y = current_data[channel]
                 # 数据预处理：去趋势和滤波
                 DataFilter.detrend(data_y, DetrendOperations.CONSTANT.value)  # 去趋势
