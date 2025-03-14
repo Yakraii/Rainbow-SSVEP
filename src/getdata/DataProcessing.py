@@ -62,7 +62,7 @@ def save_data(all_freq_data):
     print("输出形状:", output.shape)  # (6, 8, 1000, 5)
 
     # 保存结果
-    scipy.io.savemat('../../data/processed_data.mat', {'processed_data': output})
+    scipy.io.savemat('../../data/' + args.file_path + ".mat", {'processed_data': output})
 
 if __name__ == '__main__':
     # 接收两个个参数：csv文件地址、频率1
