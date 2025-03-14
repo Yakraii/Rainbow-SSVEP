@@ -4,7 +4,13 @@
 import matplotlib
 import numpy as np
 import pandas as pd
+import os
 import matplotlib.pyplot as plt
+from module import getPath
+
+# 获取路径
+root_path = getPath.getRootPath()
+result_path = os.path.join(root_path, 'result')
 
 def plot_save_Result(final_acc_list, model_name, dataset='Benchmark', UD=0, ratio=1, win_size='1', text=True):
     '''
@@ -53,8 +59,11 @@ def plot_save_Result(final_acc_list, model_name, dataset='Benchmark', UD=0, rati
         df[('Fold' + str(i + 1))] = [f'{acc * 100:.2f}' for acc in fold_acc]
 
     df['Mean±Std'] = [f'{mean * 100:.2f}±{std * 100:.2f}' for mean, std in zip(final_mean_list, final_var_list)]
-    df.to_csv(f'my_result/{dataset}/{model_name}/{proportion}_{val_way}_Classification_Result({win_size}S).csv',
-              index=False)
+    print("hahahaha",os.getcwd()) # 打印当前目录
+    
+    # df.to_csv(f'result/{dataset}/{model_name}/{proportion}_{val_way}_Classification_Result({win_size}S).csv',index=False)
+    csv_save_path = os.path.join(result_path, dataset, model_name, f'{proportion}_{val_way}_Classification_Result({win_size}S).csv')
+    df.to_csv(csv_save_path, index=False)
 
     data1 = final_mean_list
 
@@ -107,6 +116,9 @@ def plot_save_Result(final_acc_list, model_name, dataset='Benchmark', UD=0, rati
            else:
                plt.text(a[i] - delta * 6.0, data1[i] + delta * 0.1,
                         f'{final_mean_list[-1] * 100:.2f}±{final_var_list[-1] * 100:.2f}', color='r')
-    plt.savefig(f'my_result/{dataset}/{model_name}/{proportion}_{val_way}_Classification_Result({win_size}S).png')
+    
+    save_path = os.path.join(result_path, dataset, model_name, f'{proportion}_{val_way}_Classification_Result({win_size}S).png')
+    plt.savefig(save_path)
+    # plt.savefig(f'result/{dataset}/{model_name}/{proportion}_{val_way}_Classification_Result({win_size}S).png')
     plt.show()
 
