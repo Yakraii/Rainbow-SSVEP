@@ -1,29 +1,14 @@
-import pandas as pd
-import tkinter as tk
-from tkinter import filedialog
+import argparse
 
-# 写一个选择csv文件的ui界面，然后读取csv文件，然后进行数据处理，最后输出数据的形状
-def select_file():
-    root = tk.Tk()
-    root.withdraw()
-    file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
-    return file_path
+print('halo')
 
-def read_csv(file_path):
-    data = pd.read_csv(file_path)
-    return data
-
-def process_data(data):
-    # Add your data processing code here
-    processed_data = data  # Placeholder for actual processing
-    return processed_data
-
-def main():
-    file_path = select_file()
-    if file_path:
-        data = read_csv(file_path)
-        processed_data = process_data(data)
-        print("Data shape:", processed_data.shape)
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    # 接收两个个参数：csv文件地址、频率1
+    parser = argparse.ArgumentParser(description="Data processing script.")
+    parser.add_argument('--file_path', type=str, default="", help='Path to the raw CSV file')
+    parser.add_argument('--frequencies', type=float, nargs='*', default=[7, 8, 11, 12], help='List of frequencies')
+    
+    args = parser.parse_args()
+    print("halo")
+    print("File path:", args.file_path)
+    print("Frequencies:", args.frequencies)
