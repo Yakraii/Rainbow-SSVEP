@@ -13,29 +13,22 @@ class getSSVEP12Intra(Dataset):
     def __init__(self, subject=1, train_ratio=0.8, KFold=None, n_splits=5, mode="train"):
         super(getSSVEP12Intra, self).__init__()
         self.train_ratio = train_ratio  # 训练集比例
-        self.Nh = 180  # 总样本数
+        self.Nh = 25  # 总样本数
         self.Nc = 8  # 通道数
-        self.Nt = 1024  # 每个样本的时间点数
-        self.Nf = 12  # 频率数
-        self.Fs = 256  # 采样率
+        self.Nt = 1000  # 每个样本的时间点数
+        self.Nf = 5  # 频率数
+        self.Fs = 250  # 采样率
         self.subject = subject  # 被试编号
         self.eeg_data, self.label_data = self.load_Data()  # 加载数据
         self.num_trial = self.Nh // self.Nf  # 每个频率的试验数
         self.train_idx = []  # 训练集索引
         self.test_idx = []  # 测试集索引
-        if KFold is not None:
-            fold_trial = self.num_trial // n_splits  # 每折的试验数
-            self.valid_trial_idx = [i for i in range(KFold * fold_trial, (KFold + 1) * fold_trial)]  # 验证集索引
 
-        for i in range(0, self.Nh, self.Nh // self.Nf):  # 遍历每个频率的起始索引
-            for j in range(self.Nh // self.Nf):  # 遍历每个频率的试验
+        for i in range(0, self.Nh, self.num_trial):  # 遍历每个频率的起始索引
+            for j in range(self.num_trial):  # 遍历每个频率的试验
                 if n_splits == 2 and j == self.num_trial - 1:  # 如果是2折交叉验证且是最后一个试验，跳过
                     continue
-                if KFold is not None:
-                    if j not in self.valid_trial_idx:
-                        self.train_idx.append(i + j)  # 添加到训练集索引
-                    else:
-                        self.test_idx.append(i + j)  # 添加到测试集索引
+
                 else:
                     if j < int(self.num_trial * train_ratio):
                         self.train_idx.append(i + j)  # 添加到训练集索引
@@ -67,18 +60,23 @@ class getSSVEP12Intra(Dataset):
 
     # 加载单个被试的数据
     def load_Data(self):
-        subjectfile = scipy.io.loadmat(f'data/Dial/S{self.subject}.mat')  # 加载.mat文件
-        samples = subjectfile['eeg']  # 获取EEG数据 (12, 8, 1024, 15)
+        # subjectfile = scipy.io.loadmat(f'data/Dial/S{self.subject}.mat')  # 加载.mat文件
+        subjectfile = scipy.io.loadmat('C:/Users/f/Desktop/CCA/data/Dial/All.mat')  # 加载.mat文件
+        # print(subjectfile.keys())
+        samples = subjectfile['processed_data']  # 获取EEG数据 (12, 8, 1024, 15)
+        # samples = samples[:2, :, :, :] # 将samples中的第一维删至 (2, 8, 1024, 15)
+
         eeg_data = samples[0, :, :, :]  # 初始化EEG数据 (8, 1024, 15)
-        for i in range(1, 12):
+        for i in range(1, 5):
             eeg_data = np.concatenate([eeg_data, samples[i, :, :, :]], axis=2)  # 拼接数据
         eeg_data = eeg_data.transpose([2, 0, 1])  # 转置数据 (180, 8, 1024)
         eeg_data = np.expand_dims(eeg_data, axis=1)  # 扩展维度 (180, 1, 8, 1024)
         eeg_data = torch.from_numpy(eeg_data)  # 转换为Tensor
-        label_data = np.zeros((180, 1))  # 初始化标签数据
-        for i in range(12):
-            label_data[i * 15:(i + 1) * 15] = i  # 设置标签
+        # label_data = np.zeros((180, 1))  # 初始化标签数据
+        label_data = np.zeros((self.Nh, 1))  # 初始化标签数据
+        for i in range(5):
+            label_data[i * 5:(i + 1) * 5] = i  # 设置标签
         label_data = torch.from_numpy(label_data)  # 转换为Tensor
-        print(eeg_data.shape)
-        print(label_data.shape)
+        print("eeg_data.shape: ",eeg_data.shape)
+        print("label_data.shape: ",label_data.shape)
         return eeg_data, label_data  # 返回EEG数据和标签数据
