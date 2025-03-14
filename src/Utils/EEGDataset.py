@@ -1,11 +1,13 @@
-# 设计者:潘宇东
-# 编码者:上帝之手
-# 时间:2021/10/6 22:47
 import numpy as np
 from torch.utils.data import Dataset
 import torch
 import scipy.io
 from scipy import signal
+import os
+from module import getPath
+# 读取路径
+root_path = getPath.getRootPath()
+data_path = os.path.join(root_path, 'data', 'data_processed')
 
 # 定义一个继承自Dataset的类getSSVEP12Intra
 class getSSVEP12Intra(Dataset):
@@ -61,7 +63,7 @@ class getSSVEP12Intra(Dataset):
     # 加载单个被试的数据
     def load_Data(self):
         # subjectfile = scipy.io.loadmat(f'data/Dial/S{self.subject}.mat')  # 加载.mat文件
-        subjectfile = scipy.io.loadmat('data/data_processed/merged_data.mat')  # 加载.mat文件
+        subjectfile = scipy.io.loadmat(data_path + '/merged_data.mat')  # 加载.mat文件
         # print(subjectfile.keys())
         samples = subjectfile['processed_data']  # 获取EEG数据 (12, 8, 1024, 15)
         # samples = samples[:2, :, :, :] # 将samples中的第一维删至 (2, 8, 1024, 15)
