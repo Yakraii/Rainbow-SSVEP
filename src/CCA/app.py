@@ -185,6 +185,7 @@ def record_data():
         stderr=subprocess.PIPE,
         text=True,
         bufsize=1,
+        encoding='utf-8'
     )
 
     # 设置超时时间（单位：秒）
