@@ -1,3 +1,5 @@
+import time
+
 from flask import Flask, request, jsonify
 import subprocess
 import json
@@ -156,7 +158,53 @@ def record_data():
     400 - 请求体中缺少必要的参数。
     500 - 子进程执行失败或输出解析失败。
     """
-    
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Invalid input"}), 400
+
+    file_name = data.get('file_name')
+    if not file_name:
+        return jsonify({"error": "file_name parameter is required"}), 400
+    # 构建命令行参数
+    cmd = [
+        'python', os.path.join(CCA_path, 'Marker_Recorder.py'),
+        '--file_name', file_name
+    ]
+
+    # 启动子进程并实时捕获输出
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        bufsize=1,
+    )
+
+    # 设置超时时间（单位：秒）
+    timeout = 2
+    start_time = time.time()
+    success = False
+
+    while time.time() - start_time < timeout:
+        # 非阻塞读取输出
+        line = proc.stdout.readline()
+        if "BOARD_PREPARED_SUCCESS" in line:
+            success = True
+            break
+        if proc.poll() is not None:  # 子进程已退出
+            break
+
+    if success:
+        # 返回成功，子进程继续在后台运行
+        return jsonify({"message": "Recording started successfully"}), 200
+    else:
+        # 终止子进程并获取错误信息
+        proc.terminate()
+        stderr_output = proc.stderr.read()
+        return jsonify({
+            "error": "Failed to initialize board",
+            "details": stderr_output.strip()
+        }), 500
 
 
 if __name__ == '__main__':
