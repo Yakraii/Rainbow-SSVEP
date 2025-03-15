@@ -206,6 +206,5 @@ def record_data():
             "details": stderr_output.strip()
         }), 500
 
-
 if __name__ == '__main__':
     app.run(debug=True)
