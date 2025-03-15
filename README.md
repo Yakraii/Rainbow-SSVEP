@@ -1,7 +1,7 @@
 # Rainbow-SSVEP
 
 ## 项目简介
-Rainbow-SSVEP 是一个用于研究稳态视觉诱发电位 (SSVEP) 的项目。
+🌈Rainbow-SSVEP 是一个研究稳态视觉诱发电位 (SSVEP) 的项目。
 
 ## 目录
 - [安装](#安装)
@@ -32,11 +32,18 @@ Rainbow-SSVEP 是一个用于研究稳态视觉诱发电位 (SSVEP) 的项目。
     ```bash
     pip install -r requirements.txt
     ```
+4. 安装前端
+    ```bash
+    cd SSVEP-WDBE
+    npm install
+    ```
+
 
 ## 使用方法
 运行以下命令以启动项目：
 ```bash
-python main.py
+npm run dev
+python app.py
 ```
 
 ## 贡献
