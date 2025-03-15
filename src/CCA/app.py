@@ -120,7 +120,7 @@ def process_data():
 
     # 构建命令行参数
     cmd = [
-        'python', os.path.join(CCA_path, 'DataProcessing.py'),
+        'python', os.path.join(dataporcess_path, 'DataProcessing.py'),
         '--file_name', file_name
     ]
 
@@ -167,7 +167,7 @@ def record_data():
         return jsonify({"error": "file_name parameter is required"}), 400
     # 构建命令行参数
     cmd = [
-        'python', os.path.join(CCA_path, 'Marker_Recorder.py'),
+        'python', os.path.join(dataporcess_path, 'Marker_Recorder.py'),
         '--file_name', file_name
     ]
 
@@ -181,7 +181,7 @@ def record_data():
     )
 
     # 设置超时时间（单位：秒）
-    timeout = 2
+    timeout = 50 # 等待后端输出结果状态
     start_time = time.time()
     success = False
 
@@ -196,13 +196,13 @@ def record_data():
 
     if success:
         # 返回成功，子进程继续在后台运行
-        return jsonify({"message": "Recording started successfully"}), 200
+        return jsonify({"message": "Recording started successfully (板卡准备成功！)"}), 200
     else:
         # 终止子进程并获取错误信息
         proc.terminate()
         stderr_output = proc.stderr.read()
         return jsonify({
-            "error": "Failed to initialize board",
+            "error": "Failed to initialize board (板卡初始化失败)",
             "details": stderr_output.strip()
         }), 500
 

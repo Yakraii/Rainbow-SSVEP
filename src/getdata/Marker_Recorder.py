@@ -65,7 +65,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # 使用传入的文件名
-    data_path = os.path.join(root_path, 'data', f"{args.file_name}.csv")
+    data_path = os.path.join(root_path, 'data_raw', f"{args.file_name}.csv")
 
     try:
         init()
