@@ -39,6 +39,8 @@
                 <td colspan="4">
                   <button type="button" @click="addBox">添加</button>
                   <button type="submit">开始</button>
+                  <button type="button" @click="processData">数据处理</button>
+                  <button type="button" @click="classifyData">评估</button>
                 </td>
               </tr>
             </tfoot>
@@ -147,7 +149,7 @@ const startRun = async () => {
   fileName.value = `${userId} + ${getCurrentTime()}`;
 
   try {
-    const response = await axios.post("http://127.0.0.1:5000/record_data", { file_name: fileName });
+    const response = await axios.post("http://127.0.0.1:5000/record_data", { file_name: fileName.value });
 
     if (response.status === 200) {
       isRunning.value = true;
@@ -160,6 +162,50 @@ const startRun = async () => {
     console.error("请求失败:", error);
   }
 };
+
+const processData = async () => {
+  if (!fileName.value) {
+    console.error("文件名为空，无法处理数据");
+    return;
+  }
+
+  try {
+    const response = await axios.post("http://127.0.0.1:5000/process_data", {
+      file_name: fileName.value,
+      frequencies: boxes.value.map(box => box.frequency),
+    });
+
+    if (response.status === 200) {
+      console.log("数据处理成功:", response.data);
+    } else {
+      console.error("数据处理失败:", response.data);
+    }
+  } catch (error) {
+    console.error("数据处理请求错误:", error);
+  }
+};
+
+const classifyData = async () => {
+  if (!fileName.value) {
+    console.error("文件名为空，无法评估");
+    return;
+  }
+
+  try {
+    const response = await axios.post("http://127.0.0.1:5000/classify", {
+      file_name: fileName.value,
+    });
+
+    if (response.status === 200) {
+      console.log("评估成功:", response.data);
+    } else {
+      console.error("评估失败:", response.data);
+    }
+  } catch (error) {
+    console.error("评估请求错误:", error);
+  }
+};
+
 
 
 // 启动单个刺激
