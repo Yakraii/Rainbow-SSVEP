@@ -1,5 +1,5 @@
 import time
-
+from flask_cors import CORS
 from flask import Flask, request, jsonify
 import subprocess
 import json
@@ -11,10 +11,11 @@ CCA_path = os.path.join(root_path, 'src', 'CCA')
 dataporcess_path = os.path.join(root_path, 'src', 'getdata')
 
 app = Flask(__name__)
+CORS(app)  # 启用 CORS
 
 @app.route('/')
 def home():
-    return "Welcome to the SSVEP Classification API. Use the /classify endpoint to classify data."
+    return "Welcome to the SSVEP Classification API. Use the /classify endpoint to classify data. Use the /process_data endpoint to process data. Use the /record_data endpoint to record data." 
 
 
 @app.route('/classify', methods=['POST'])
