@@ -137,6 +137,27 @@ def process_data():
 
     return jsonify(result_data)
 
+@app.route('/record_data', methods=['POST'])
+def record_data():
+    """
+    POST /record_data
+    这个接口用于启动 Marker_Recorder.py 脚本，传入 file_name 进行数据获取。
+
+    请求体:
+    {
+        "file_name": "123 + 2025/3/15_11:29", #必选 文件名字
+    }
+
+    响应:
+    板卡准备成功返回成功码，随后再开启闪烁（待写）。
+    启动失败时返回错误信息。
+
+    错误码:
+    400 - 请求体中缺少必要的参数。
+    500 - 子进程执行失败或输出解析失败。
+    """
+    
+
 
 if __name__ == '__main__':
     app.run(debug=True)
