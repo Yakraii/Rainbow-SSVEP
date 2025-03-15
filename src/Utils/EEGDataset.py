@@ -12,8 +12,9 @@ data_path = os.path.join(root_path, 'data', 'data_processed')
 # 定义一个继承自Dataset的类getSSVEP12Intra
 class getSSVEP12Intra(Dataset):
     # 初始化方法
-    def __init__(self, subject=1, train_ratio=0.8, KFold=None, n_splits=5, mode="train"):
+    def __init__(self,  subject=1, file_name = "merged_data.mat", train_ratio=0.8, KFold=None, n_splits=5, mode="train"):
         super(getSSVEP12Intra, self).__init__()
+        self.file_name = file_name
         self.train_ratio = train_ratio  # 训练集比例
         self.Nh = 25  # 总样本数
         self.Nc = 8  # 通道数
@@ -63,7 +64,8 @@ class getSSVEP12Intra(Dataset):
     # 加载单个被试的数据
     def load_Data(self):
         # subjectfile = scipy.io.loadmat(f'data/Dial/S{self.subject}.mat')  # 加载.mat文件
-        subjectfile = scipy.io.loadmat(data_path + '/merged_data.mat')  # 加载.mat文件
+        subjectfile = scipy.io.loadmat(os.path.join(data_path, self.file_name) + ".mat")  # 加载.mat文件
+        print("数据集路径：",os.path.join(data_path, self.file_name) + ".mat")
         # print(subjectfile.keys())
         samples = subjectfile['processed_data']  # 获取EEG数据 (12, 8, 1024, 15)
         # samples = samples[:2, :, :, :] # 将samples中的第一维删至 (2, 8, 1024, 15)

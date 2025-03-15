@@ -43,8 +43,8 @@ def main():
         final_valid_acc_list = []
         print(f"Training for K_Fold {fold_num + 1}")
         for subject in range(1, opt.Ns + 1):
-            train_dataset = EEGDataset.getSSVEP12Intra(subject, train_ratio=0.0, mode="train")
-            test_dataset = EEGDataset.getSSVEP12Intra(subject, train_ratio=0.0, mode="test")
+            train_dataset = EEGDataset.getSSVEP12Intra(subject, file_name = opt.file_name, train_ratio=0.0, mode="train")
+            test_dataset = EEGDataset.getSSVEP12Intra(subject, file_name = opt.file_name, train_ratio=0.0, mode="test")
             # train_dataset = EEGDataset.getSSVEP12Intra(subject, KFold=fold_num, n_splits=opt.Kf, mode="test")
             # test_dataset = EEGDataset.getSSVEP12Intra(subject, KFold=fold_num, n_splits=opt.Kf, mode="train")
 
