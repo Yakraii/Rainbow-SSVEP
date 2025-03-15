@@ -147,7 +147,7 @@ const startRun = async () => {
   fileName.value = `${userId} + ${getCurrentTime()}`;
 
   try {
-    const response = await axios.post("http://127.0.0.1:5000/record_data", { file_name: fileName });
+    const response = await axios.post("http://127.0.0.1:5000/record_data", { file_name: fileName.value });
 
     if (response.status === 200) {
       isRunning.value = true;
