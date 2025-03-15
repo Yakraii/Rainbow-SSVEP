@@ -1,3 +1,4 @@
+import re
 import time
 from flask_cors import CORS
 from flask import Flask, request, jsonify
@@ -65,28 +66,29 @@ def classify():
                 "stderr": result.stderr
             }), 500
 
-        # 解析输出
+        # 提取以 RESULT: 开头的 JSON 数据
         output = result.stdout.strip()  # 去除多余的空格和换行符
-        if not output:
+        match = re.search(r"RESULT: (\{.*\})", output)  # 使用正则表达式提取 JSON 数据
+
+        if not match:
             return jsonify({
-                "error": "返回了空白的输出。"
+                "error": "未找到有效的 JSON 数据。",
+                "output": output
             }), 500
 
         try:
-            result_data = json.loads(output)
+            result_data = json.loads(match.group(1))  # 解析提取的 JSON 数据
         except json.JSONDecodeError as e:
             return jsonify({
                 "error": "无法将子进程的输出解析为JSON",
-                "output": output,
+                "output": match.group(1),  # 打印提取的 JSON 数据
                 "exception": str(e)
             }), 500
 
         # 返回结果，包括 average_scores
         return jsonify({
-            "labels": result_data.get("labels"),
-            "predicted_class": result_data.get("predicted_class"),
             "average_scores": result_data.get("average_scores"),
-            "accuracy": result_data.get("accuracy")
+            "final_valid_acc_list": result_data.get("final_valid_acc_list")
         })
 
     except Exception as e:

@@ -1,4 +1,5 @@
 import argparse
+import json
 import numpy as np
 import Utils.EEGDataset as EEGDataset
 from sklearn.metrics import confusion_matrix
@@ -13,6 +14,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     '''Dial Dataset'''
+    parser.add_argument('--file_name', type=str, default='', help="name of the dataset")
     parser.add_argument('--dataset', type=str, default='Dial', help="12-class dataset")
     parser.add_argument('--ws', type=float, default=1.0, help="window size of ssvep")
     parser.add_argument('--Kf', type=int, default=1, help="k-fold cross validation")
@@ -41,8 +43,8 @@ def main():
         final_valid_acc_list = []
         print(f"Training for K_Fold {fold_num + 1}")
         for subject in range(1, opt.Ns + 1):
-            train_dataset = EEGDataset.getSSVEP12Intra(subject, train_ratio=0.0, mode="train")
-            test_dataset = EEGDataset.getSSVEP12Intra(subject, train_ratio=0.0, mode="test")
+            train_dataset = EEGDataset.getSSVEP12Intra(subject, file_name = opt.file_name, train_ratio=0.0, mode="train")
+            test_dataset = EEGDataset.getSSVEP12Intra(subject, file_name = opt.file_name, train_ratio=0.0, mode="test")
             # train_dataset = EEGDataset.getSSVEP12Intra(subject, KFold=fold_num, n_splits=opt.Kf, mode="test")
             # test_dataset = EEGDataset.getSSVEP12Intra(subject, KFold=fold_num, n_splits=opt.Kf, mode="train")
 
@@ -63,12 +65,19 @@ def main():
             #                10.25, 12.25, 14.25, 10.75, 12.75, 14.75]
             targets = [7.5, 9.75, 10.25, 12.25, 14.25]
 
-            labels, predicted_labels = fbcca.fbcca_classify(targets, eeg_test, train_data=eeg_train, template=False)
+            labels, predicted_labels, average_scores = fbcca.fbcca_classify(targets, eeg_test, train_data=eeg_train, template=False)
             c_mat = confusion_matrix(labels, predicted_labels)
             accuracy = np.divide(np.trace(c_mat), np.sum(np.sum(c_mat)))
             print(f'Subject: {subject}, Classification Accuracy:{accuracy:.3f}')
             final_valid_acc_list.append(accuracy)
 
+        result = {
+            # "labels": labels.tolist(),
+            "average_scores": average_scores,
+            "final_valid_acc_list": final_valid_acc_list # 每个受试者的准确率
+            }
+
+        print("RESULT:", json.dumps(result))  # 使用 RESULT: 标识 JSON 数据
         final_acc_list.append(final_valid_acc_list)
 
     # 3、Plot result
