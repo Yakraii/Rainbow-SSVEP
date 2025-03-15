@@ -1,6 +1,7 @@
 # Designer:Pan YuDong
 # Coder:God's hand
 # Time:2022/1/28 0:13
+import json
 import numpy as np
 import math
 from scipy import signal
@@ -54,7 +55,7 @@ class FBCCA():
                 corr[i] = np.corrcoef(x_a[:, i], y_b[:, i])[0, 1]
                 result[freq_idx] = np.max(corr)
 
-        print("result:", result)
+        # print("result:", result)
         return result
 
     def filter_bank(self, eeg):
@@ -134,4 +135,4 @@ class FBCCA():
             average_scores.append(average_score)  # 将平均值添加到列表中
 
         print("average_scores:", average_scores)  # 打印每个标签对应的评分的平均值
-        return labels, predicted_class
+        return labels, predicted_class, average_scores
