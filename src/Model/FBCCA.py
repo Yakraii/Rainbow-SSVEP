@@ -99,6 +99,8 @@ class FBCCA():
 
         predicted_class = []
         labels = []
+        scores = []  # 初始化评分列表
+
         num_segments = test_data.shape[0]
         num_perCls = num_segments // reference_signals.shape[0]
 
@@ -115,7 +117,21 @@ class FBCCA():
                 result += (w * (self.find_correlation(1, x, y) ** 2))
 
             predicted_class.append(np.argmax(result) + 1)
+            scores.append(np.max(result))  # 保存当前段的最大评分
+        
+        labels = np.array(labels) + 1  # 转换为numpy数组并加1
+        predicted_class = np.array(predicted_class)  # 转换为numpy数组
+        scores = np.array(scores)  # 转换为numpy数组
 
-        labels = np.array(labels) + 1
-        predicted_class = np.array(predicted_class)
+        # 计算每个标签对应的评分的平均值
+        average_scores = []
+        for label in range(1, 6):  # 假设标签从1到5
+            mask = labels == label  # 创建掩码，选择当前标签的所有评分
+            if np.any(mask):  # 确保当前标签存在
+                average_score = np.mean(scores[mask])  # 计算当前标签的评分平均值
+            else:
+                average_score = 0  # 如果当前标签不存在，设置为0
+            average_scores.append(average_score)  # 将平均值添加到列表中
+
+        print("average_scores:", average_scores)  # 打印每个标签对应的评分的平均值
         return labels, predicted_class

@@ -57,10 +57,8 @@ for fold_num in range(opt.Kf):  # 遍历每个折叠
         print("eeg_train.shape:", eeg_train.shape)  # 打印训练数据的形状
         print("eeg_test.shape:", eeg_test.shape)  # 打印测试数据的形状
         cca = CCA.CCA_Base(opt=opt)  # 初始化CCA模型
-        # targets = [8, 9]  # 目标频率列表
         targets = [7.5, 9.75, 10.25, 12.25, 14.25]
-        # targets = [9.25, 11.25, 13.25, 9.75, 11.75, 13.75,
-        #            10.25, 12.25, 14.25, 10.75, 12.75, 14.75]  # 目标频率列表
+
 
         labels, predicted_labels = cca.cca_classify(targets, eeg_test, train_data=eeg_train, template=False)  # 进行CCA分类
         

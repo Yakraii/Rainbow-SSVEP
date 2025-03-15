@@ -1,6 +1,6 @@
 # 脑电帽配置
 board:
-  ip_address: "192.168.137.140" # IP地址
+  ip_address: "192.168.137.131" # IP地址
   ip_port: 9527 # 端口号
   timeout: 1000 # 超时时间
   board_id: 5 #5/16/532/564

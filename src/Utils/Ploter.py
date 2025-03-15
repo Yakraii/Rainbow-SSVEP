@@ -59,7 +59,6 @@ def plot_save_Result(final_acc_list, model_name, dataset='Benchmark', UD=0, rati
         df[('Fold' + str(i + 1))] = [f'{acc * 100:.2f}' for acc in fold_acc]
 
     df['Mean±Std'] = [f'{mean * 100:.2f}±{std * 100:.2f}' for mean, std in zip(final_mean_list, final_var_list)]
-    print("hahahaha",os.getcwd()) # 打印当前目录
     
     # df.to_csv(f'result/{dataset}/{model_name}/{proportion}_{val_way}_Classification_Result({win_size}S).csv',index=False)
     csv_save_path = os.path.join(result_path, dataset, model_name, f'{proportion}_{val_way}_Classification_Result({win_size}S).csv')

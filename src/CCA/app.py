@@ -81,7 +81,13 @@ def classify():
                 "exception": str(e)
             }), 500
 
-        return jsonify(result_data)
+        # 返回结果，包括 average_scores
+        return jsonify({
+            "labels": result_data.get("labels"),
+            "predicted_class": result_data.get("predicted_class"),
+            "average_scores": result_data.get("average_scores"),
+            "accuracy": result_data.get("accuracy")
+        })
 
     except Exception as e:
         return jsonify({

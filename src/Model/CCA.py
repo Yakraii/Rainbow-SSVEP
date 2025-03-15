@@ -69,13 +69,28 @@ class CCA_Base():
 
         predicted_class = []  # 初始化预测类别列表
         labels = []  # 初始化标签列表
+        scores = []  # 初始化评分列表
         num_segments = test_data.shape[0]  # 获取测试数据的段数，180
         num_perCls = num_segments // reference_signals.shape[0]  # 每个类别的段数，180//12=15
+
         for segment in range(0, num_segments):  # 遍历每个段
             labels.append(segment // num_perCls)  # 计算标签，[0,0,0,...,1,1,1,...,2,2,2,...]
             result = self.find_correlation(1, test_data[segment], reference_signals)  # 计算相关系数
             predicted_class.append(np.argmax(result) + 1)  # 预测类别
+            scores.append(np.max(result))  # 保存当前段的评分
 
         labels = np.array(labels) + 1  # 转换为numpy数组并加1
         predicted_class = np.array(predicted_class)  # 转换为numpy数组
+        scores = np.array(scores)  # 转换为numpy数组
+
+        # 计算每个标签对应的评分的平均值
+        average_scores = []
+        for label in range(1, 6):  # 假设标签从1到5
+            mask = labels == label  # 创建掩码，选择当前标签的所有评分
+            average_score = np.mean(scores[mask])  # 计算当前标签的评分平均值
+            average_scores.append(average_score)  # 将平均值添加到列表中
+
+        print("predicted_class:", predicted_class)  # 打印预测类别
+        print("average_scores:", average_scores)  # 打印每个标签对应的评分的平均值
+        
         return labels, predicted_class  # 返回标签和预测类别
