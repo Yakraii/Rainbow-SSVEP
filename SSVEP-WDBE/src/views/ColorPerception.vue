@@ -81,6 +81,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import axios from "axios";
 
 const isRunning = ref(false);
 const boxes = ref([]);
@@ -98,6 +99,9 @@ const flickerTexts = ref(true);
 const flickerBoxes = ref(false);
 
 const fontSize = computed(() => Math.min(window.innerWidth, window.innerHeight) * 1.0);
+
+//文件名
+const fileName = ref("");
 
 // 初始化默认参数
 onMounted(() => {
@@ -124,13 +128,39 @@ const removeBox = (index) => {
   boxes.value.splice(index, 1);
 };
 
-// 开始刺激
-const startRun = () => {
-  if (boxes.value.length === 0) return;
-  isRunning.value = true;
-  activeIndex.value = 0;
-  startStimulus(activeIndex.value);
+const userId = "user_123"; // 这里可以动态获取用户ID
+const getCurrentTime = () => {
+  const now = new Date();
+  return `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}_${now.getHours()}:${now.getMinutes()}`;
 };
+
+// 开始刺激
+// const startRun = () => {
+//   if (boxes.value.length === 0) return;
+//   isRunning.value = true;
+//   activeIndex.value = 0;
+//   startStimulus(activeIndex.value);
+// };
+const startRun = async () => {
+  if (boxes.value.length === 0) return;
+
+  fileName.value = `${userId} + ${getCurrentTime()}`;
+
+  try {
+    const response = await axios.post("http://127.0.0.1:5000/record_data", { file_name: fileName });
+
+    if (response.status === 200) {
+      isRunning.value = true;
+      activeIndex.value = 0;
+      startStimulus(activeIndex.value);
+    } else {
+      console.error("后端返回错误状态:", response.status);
+    }
+  } catch (error) {
+    console.error("请求失败:", error);
+  }
+};
+
 
 // 启动单个刺激
 const startStimulus = (index) => {
