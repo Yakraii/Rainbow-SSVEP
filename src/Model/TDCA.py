@@ -1,6 +1,3 @@
-# Designer:Ethan Pan
-# Coder:God's hand
-# Time:2024/4/2 16:42
 import numpy as np
 from scipy.linalg import qr
 from scipy.stats import pearsonr
@@ -11,23 +8,6 @@ from scipy.linalg import solve
 
 
 def isPD(B):
-    """Returns true when input matrix is positive-definite, via Cholesky decompositon method.
-
-    Parameters
-    ----------
-    B : ndarray
-        Any matrix, shape (N, N)
-
-    Returns
-    -------
-    bool
-        True if B is positve-definite.
-
-    Notes
-    -----
-        Use numpy.linalg rather than scipy.linalg. In this case, scipy.linalg has unpredictable behaviors.
-    """
-
     try:
         _ = np.linalg.cholesky(B)
         return True
@@ -75,15 +55,7 @@ def nearestPD(A):
     print("Replace current matrix with the nearest positive-definite matrix.")
 
     spacing = np.spacing(np.linalg.norm(A))
-    # The above is different from [1]. It appears that MATLAB's `chol` Cholesky
-    # decomposition will accept matrixes with exactly 0-eigenvalue, whereas
-    # Numpy's will not. So where [1] uses `eps(mineig)` (where `eps` is Matlab
-    # for `numpy.spacing`), we use the above definition. CAVEAT: our `spacing`
-    # will be much larger than [1]'s `eps(mineig)`, since `mineig` is usually on
-    # the order of 1e-16, and `eps(1e-16)` is on the order of 1e-34, whereas
-    # `spacing` will, for Gaussian random matrixes of small dimension, be on
-    # othe order of 1e-16. In practice, both ways converge, as the unit test
-    # below suggests.
+
     eye = np.eye(A.shape[0])
     k = 1
     while not isPD(A3):
@@ -123,9 +95,6 @@ def robust_pattern(W, Cx, Cs):
     .. [1] Haufe, Stefan, et al. "On the interpretation of weight vectors of linear models in multivariate neuroimaging.
            Neuroimage 87 (2014): 96-110.
     """
-    # use linalg.solve instead of inv, makes it more stable
-    # see https://github.com/robintibor/fbcsp/blob/master/fbcsp/signalproc.py
-    # and https://ww2.mathworks.cn/help/matlab/ref/mldivide.html
     A = solve(Cs.T, np.dot(Cx, W).T).T
     return A
 

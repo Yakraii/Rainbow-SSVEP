@@ -7,13 +7,9 @@ from Model import CCA
 from Utils import Ploter
 
 '''                Fs    Nc     Nh     Nf     Ns 
-           Dial:  256    8     180     12    10  
+           Dial:  250    8     25     5    1  
 '''
 parser = argparse.ArgumentParser()
-
-'''
-Dial SSVEP Dataset
-'''
 parser.add_argument('--file_name', type=str, default='', help="name of the dataset")
 parser.add_argument('--dataset', type=str, default='Dial', help="12-class dataset")
 parser.add_argument('--ws', type=float, default=1.0, help="window size of ssvep")

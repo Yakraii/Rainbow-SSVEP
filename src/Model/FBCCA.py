@@ -1,6 +1,3 @@
-# Designer:Pan YuDong
-# Coder:God's hand
-# Time:2022/1/28 0:13
 import json
 import numpy as np
 import math

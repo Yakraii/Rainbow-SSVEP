@@ -1,6 +1,3 @@
-# Designer:Pan YuDong
-# Coder:God's hand
-# Time:2022/1/28 2:18
 import matplotlib
 import numpy as np
 import pandas as pd
@@ -13,18 +10,6 @@ root_path = getPath.getRootPath()
 result_path = os.path.join(root_path, 'result')
 
 def plot_save_Result(final_acc_list, model_name, dataset='Benchmark', UD=0, ratio=1, win_size='1', text=True):
-    '''
-    :param final_acc_list: The final accuracy list
-    :param model_name: The name of model to be validated
-    :param dataset: The name of dataset to be validated
-    :param UD: -1——Unsupervised, 0——User-Dependent；1——User-Independent
-    :param ratio: -1——Training-Free, 1——80% vs 20%;2——50% vs 50%;3——20% vs 80%(UD Approach)
-                  0 or else——(N-1)/N vs 1/N(UI Approach)
-    :param win_size: The window size used in data to evaluate model performance
-    :param text: Is the specific value displayed on the histogram
-    :return:
-           Show the result figure and save it
-    '''
     if ratio == -1:
         proportion = 'Training-Free'
     elif ratio == 1:
@@ -45,7 +30,7 @@ def plot_save_Result(final_acc_list, model_name, dataset='Benchmark', UD=0, rati
 
     final_acc_list = np.asarray(final_acc_list)
     final_mean_list = np.mean(final_acc_list, axis=0)
-    final_var_list = np.std(final_acc_list, ddof=1, axis=0)  # ddof: default——divide N(biased);1——divide N-1(unbiased)
+    final_var_list = np.std(final_acc_list, ddof=1, axis=0)  
     final_mean_list = np.append(final_mean_list, np.mean(final_mean_list, axis=0))
     final_var_list = np.append(final_var_list, np.std(final_mean_list, ddof=1, axis=0))
     print("final_mean_list.shape:", final_mean_list.shape)
@@ -118,6 +103,5 @@ def plot_save_Result(final_acc_list, model_name, dataset='Benchmark', UD=0, rati
     
     save_path = os.path.join(result_path, dataset, model_name, f'{proportion}_{val_way}_Classification_Result({win_size}S).png')
     plt.savefig(save_path)
-    # plt.savefig(f'result/{dataset}/{model_name}/{proportion}_{val_way}_Classification_Result({win_size}S).png')
     plt.show()
 

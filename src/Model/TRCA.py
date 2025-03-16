@@ -1,6 +1,3 @@
-# 设计师:Pan YuDong
-# 编写者:God's hand
-# 时间:2022/12/1 16:14
 import scipy
 from scipy import signal
 import numpy as np

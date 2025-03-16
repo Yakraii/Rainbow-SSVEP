@@ -1,7 +1,3 @@
-# Designer:Yudong Pan
-# Coder:God's hand
-# Time:2023/4/13 19:24
-
 import numpy as np
 
 class MSI_Base():
