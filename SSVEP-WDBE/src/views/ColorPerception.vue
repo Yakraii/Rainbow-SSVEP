@@ -188,6 +188,7 @@ const processData = async () => {
     });
 
     if (response.status === 200) {
+      alert("数据处理成功:" + response.data);
       console.log("数据处理成功:", response.data);
     } else {
       console.error("数据处理失败:", response.data);
@@ -209,6 +210,7 @@ const classifyData = async () => {
     });
 
     if (response.status === 200) {
+      alert("评估成功:" + response.data);
       console.log("评估成功:", response.data);
     } else {
       console.error("评估失败:", response.data);
