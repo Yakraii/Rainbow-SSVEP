@@ -103,5 +103,5 @@ def plot_save_Result(final_acc_list, model_name, dataset='Benchmark', UD=0, rati
     
     save_path = os.path.join(result_path, dataset, model_name, f'{proportion}_{val_way}_Classification_Result({win_size}S).png')
     plt.savefig(save_path)
-    plt.show()
+    # plt.show()
 
