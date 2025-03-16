@@ -156,17 +156,50 @@ def process_data():
     if frequencies:
         cmd.extend(['--frequencies'] + [str(freq) for freq in frequencies])
 
-    # 启动子进程并获取输出
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    output = result.stdout
+    # 启动子进程并实时捕获输出
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        bufsize=1,
+        encoding='utf-8'
+    )
 
-    # 解析输出
-    try:
-        result_data = json.loads(output)
-    except json.JSONDecodeError:
-        return jsonify({"error": "Failed to parse output from data processing script"}), 500
+    success = False
 
-    return jsonify(result_data)
+    while True:
+        # 非阻塞读取输出
+        line = proc.stdout.readline()
+        if "Save Successfully" in line:
+            success = True
+            break
+        if proc.poll() is not None:  # 子进程已退出
+            break
+
+    if success:
+        # 返回成功
+        return jsonify({"message": "Data processing completed (数据处理完毕)"}), 200
+    else:
+        # 终止子进程并获取错误信息
+        proc.terminate()
+        stderr_output = proc.stderr.read()
+        return jsonify({
+            "error": "Save failed (保存失败)",
+            "details": stderr_output.strip()
+        }), 500
+    # # 启动子进程并获取输出
+    # result = subprocess.run(cmd, capture_output=True, text=True)
+    # output = result.stdout
+
+    # # 解析输出
+    # try:
+    #     result_data = json.loads(output)
+    # except json.JSONDecodeError:
+    #     return jsonify({"error": "Failed to parse output from data processing script"}), 500
+
+    # return jsonify(result_data)
+    
 
 @app.route('/record_data', methods=['POST'])
 def record_data():
