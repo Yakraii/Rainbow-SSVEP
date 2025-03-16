@@ -1,5 +1,5 @@
 # Rainbow-SSVEP
-
+> Master branch 稳定版本
 ## 项目简介
 🌈Rainbow-SSVEP 是一个研究稳态视觉诱发电位 (SSVEP) 的项目。
 
