@@ -1,4 +1,5 @@
 import re
+import threading
 import time
 from flask_cors import CORS
 from flask import Flask, request, jsonify
@@ -12,7 +13,26 @@ CCA_path = os.path.join(root_path, 'src', 'CCA')
 dataporcess_path = os.path.join(root_path, 'src', 'getdata')
 
 app = Flask(__name__)
+app.debug = True
 CORS(app)  # 启用 CORS
+
+def wait_for_success(proc, timeout):
+    """
+    等待子进程输出 BOARD_PREPARED_SUCCESS，超时则返回 False。
+    """
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        # 检查子进程是否已退出
+        if proc.poll() is not None:
+            return False
+        # 读取一行输出
+        line = proc.stdout.readline()
+        if line:
+            print(f"[子进程输出] {line.strip()}")
+            if "BOARD_PREPARED_SUCCESS" in line:
+                return True
+        time.sleep(0.1)  # 避免 CPU 占用过高
+    return False
 
 @app.route('/')
 def home():
@@ -51,7 +71,7 @@ def classify():
 
     # 构建命令行参数
     cmd = [
-        'python', os.path.join(CCA_path, 'FBCCA_SSVEP_Classification.py'),
+        'python', '-u', os.path.join(CCA_path, 'FBCCA_SSVEP_Classification.py'),
         '--file_name', file_name
     ]
 
@@ -129,7 +149,7 @@ def process_data():
 
     # 构建命令行参数
     cmd = [
-        'python', os.path.join(dataporcess_path, 'DataProcessing.py'),
+        'python', '-u', os.path.join(dataporcess_path, 'DataProcessing.py'),
         '--file_name', file_name
     ]
 
@@ -174,46 +194,50 @@ def record_data():
     file_name = data.get('file_name')
     if not file_name:
         return jsonify({"error": "file_name parameter is required"}), 400
-    # 构建命令行参数
+
     cmd = [
-        'python', os.path.join(dataporcess_path, 'Marker_Recorder.py'),
+        'python', '-u', os.path.join(dataporcess_path, 'Marker_Recorder.py'),
         '--file_name', file_name
     ]
 
-    # 启动子进程并实时捕获输出
+    # 启动子进程
     proc = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
         text=True,
         bufsize=1,
-        encoding='utf-8'
+        encoding='utf-8',
+        errors='replace',
     )
 
-    # 设置超时时间（单位：秒）
-    timeout = 50 # 等待后端输出结果状态
-    start_time = time.time()
-    success = False
-
-    while time.time() - start_time < timeout:
-        # 非阻塞读取输出
-        line = proc.stdout.readline()
-        if "BOARD_PREPARED_SUCCESS" in line:
-            success = True
-            break
-        if proc.poll() is not None:  # 子进程已退出
-            break
+    # 等待子进程输出 BOARD_PREPARED_SUCCESS
+    timeout = 10  # 超时时间（秒）
+    success = wait_for_success(proc, timeout)
 
     if success:
-        # 返回成功，子进程继续在后台运行
+        # 启动后台线程继续捕获输出
+        def background_reader(p):
+            with p.stdout:
+                for line in iter(p.stdout.readline, ''):
+                    print(f"[子进程后续输出] {line.strip()}")
+            p.wait()  # 等待子进程完全结束
+
+        # 启动后台线程继续捕获输出
+        threading.Thread(
+            target=background_reader,  # 后台线程的目标函数
+            args=(proc,),  # 传递给目标函数的参数
+            daemon=True  # 将线程设置为守护线程
+        ).start()
+
         return jsonify({"message": "Recording started successfully (板卡准备成功！)"}), 200
     else:
-        # 终止子进程并获取错误信息
+        # 超时或子进程异常退出
         proc.terminate()
-        stderr_output = proc.stderr.read()
+        remaining_output = proc.stdout.read()
         return jsonify({
-            "error": "Failed to initialize board (板卡初始化失败)",
-            "details": stderr_output.strip()
+            "error": "板卡准备超时或子进程异常退出",
+            "details": remaining_output.strip()
         }), 500
 
 if __name__ == '__main__':

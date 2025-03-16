@@ -8,6 +8,7 @@ import sys
 import argparse
 from module import getPath
 
+
 # 读取配置
 root_path = getPath.getRootPath()
 config_path = os.path.join(root_path, 'config', 'config.yaml')
@@ -47,11 +48,11 @@ def mark():
     try:
         for marker in range(1, 6):
             board.insert_marker(marker)
-            print(f"标记 {marker} 开始")
+            print(f"Insert {marker} begin")
             time.sleep(25)
 
             board.insert_marker(marker)
-            print(f"标记 {marker} 结束")
+            print(f"Insert {marker} end")
             # if marker < 5:
             #     time.sleep(5)  # 最后一次不需要休息
     except AttributeError:
@@ -65,20 +66,25 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # 使用传入的文件名
-    data_path = os.path.join(root_path, 'data_raw', f"{args.file_name}.csv")
+    data_path = os.path.join(root_path, 'data', 'data_raw', f"{args.file_name}.csv")
 
     try:
         init()
         # 自动执行标记插入流程
         mark()
+        time.sleep(3) # 等待数据稳定
+        # 数据保存
+        data = board.get_board_data()
+        df = pd.DataFrame(data.T, columns=columns)
+        print("data_path: ", data_path)
+        df.to_csv(data_path, index=False)
+        print("Recording completed successfully")
+
     except Exception as e:
         print(f"Error: {str(e)}")
         sys.exit(1)
     finally:
-        # 数据保存和资源释放
-        data = board.get_board_data()
-        df = pd.DataFrame(data.T, columns=columns)
-        df.to_csv(data_path, index=False)
+        # 停止流并释放板卡
         board.stop_stream()
-        board.release_all_session()
-        print("Recording completed successfully")
+        board.release_all_sessions()
+

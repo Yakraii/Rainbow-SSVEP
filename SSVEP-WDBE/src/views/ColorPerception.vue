@@ -133,7 +133,18 @@ const removeBox = (index) => {
 const userId = "user_123"; // 这里可以动态获取用户ID
 const getCurrentTime = () => {
   const now = new Date();
-  return `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}_${now.getHours()}:${now.getMinutes()}`;
+  // 格式化为两位数，例如 3 → "03"
+  const pad = (num) => String(num).padStart(2, '0');
+  // 合法字符格式：YYYY-MM-DD_HH-MM
+  const year = now.getFullYear();
+  const month = pad(now.getMonth() + 1);    // 月份补零
+  const day = pad(now.getDate());           // 日期补零
+  const hours = pad(now.getHours());        // 小时补零
+  const minutes = pad(now.getMinutes());    // 分钟补零
+  // 替换非法字符：/ → -，: → -
+  const safeTimeString = `${year}-${month}-${day}_${hours}-${minutes}`;
+  // alert(safeTimeString);
+  return safeTimeString;
 };
 
 // 开始刺激
@@ -146,7 +157,8 @@ const getCurrentTime = () => {
 const startRun = async () => {
   if (boxes.value.length === 0) return;
 
-  fileName.value = `${userId} + ${getCurrentTime()}`;
+  fileName.value = `${userId}_${getCurrentTime()}`;
+  alert("保存文件名: " + fileName.value);
 
   try {
     const response = await axios.post("http://127.0.0.1:5000/record_data", { file_name: fileName.value });
