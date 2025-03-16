@@ -1,3 +1,4 @@
+
 <template>
   <div class="Detect">
     <!-- 设置页面 -->
@@ -60,6 +61,12 @@
           </label>
         </div>
       </form>
+
+      <!-- 评估结果展示 -->
+      <div v-if="showResults" class="results-container">
+        <div id="gaugeChart" class="chart"></div>
+        <div id="barChart" class="chart"></div>
+      </div>
     </div>
 
     <!-- 刺激页面 -->
@@ -82,7 +89,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
+import * as echarts from 'echarts';
 import axios from "axios";
 
 const isRunning = ref(false);
@@ -90,9 +98,13 @@ const boxes = ref([]);
 const intervals = ref([]);
 const activeIndex = ref(-1);
 const currentBox = ref(null);
+const showResults = ref(false);
+
+let gaugeChart = null;
+let barChart = null;
 
 // 默认设置
-const presetFrequencies = [7.5, 9.25, 10.25, 12.25, 14.75];
+const presetFrequencies = [7.5, 9.75, 10.25, 12.25, 14.75];
 const presetTexts = ["A", "B", "C", "D", "E"];
 
 // 设置参数
@@ -104,6 +116,130 @@ const fontSize = computed(() => Math.min(window.innerWidth, window.innerHeight) 
 
 //文件名
 const fileName = ref("");
+
+// 初始化图表
+const initCharts = () => {
+  if (gaugeChart) gaugeChart.dispose();
+  if (barChart) barChart.dispose();
+
+  gaugeChart = echarts.init(document.getElementById('gaugeChart'));
+  barChart = echarts.init(document.getElementById('barChart'));
+};
+
+// 更新图表数据
+const updateCharts = (accuracy, scores) => {
+  const barOption = {
+    xAxis: {
+      type: 'category',
+      name: '频率',
+      nameLocation: 'center',
+      nameGap: '30',
+      data: boxes.value.map(box => box.frequency.toString()).concat(['Avg'])
+    },
+    yAxis: {
+      type: 'value',
+      name: '分数',
+      nameRotate: '',
+      nameLocation: 'center',
+      nameGap: '25'
+    },
+    series: [{
+      data: [
+        ...scores.map(score => score * 100),
+        {
+          value: accuracy * 100,
+          itemStyle: {
+            color: '#a90000'
+          }
+        }
+      ],
+      type: 'bar'
+    }]
+  };
+  const gaugeOption = {
+    series: [{
+      type: 'gauge',
+      startAngle: 180,
+      endAngle: 0,
+      center: ['50%', '75%'],
+      radius: '90%',
+      min: 0,
+      max: 1,
+      splitNumber: 10,
+      axisLine: {
+        lineStyle: {
+          width: 6,
+          color: [
+            [0.33, '#FF6E76'],
+            [0.5, '#FDDD60'],
+            [1, '#7CFFB2']
+          ]
+        }
+      },
+      pointer: {
+        icon: 'path://M12.8,0.7l12,40.1H0.7L12.8,0.7z',
+        length: '12%',
+        width: 20,
+        offsetCenter: [0, '-60%'],
+        itemStyle: {
+          color: 'auto'
+        }
+      },
+      axisTick: {
+        length: 12,
+        lineStyle: {
+          color: 'auto',
+          width: 2
+        }
+      },
+      splitLine: {
+        length: 20,
+        lineStyle: {
+          color: 'auto',
+          width: 5
+        }
+      },
+      axisLabel: {
+        color: '#464646',
+        fontSize: 20,
+        distance: -60,
+        rotate: 'tangential',
+        fontFamily: '新宋体',
+        fontWeight: 'bold',
+        formatter: function (value) {
+          if (value === 0.7) {
+            return '无风险';
+          } else if (value === 0.4) {
+            return '中等风险';
+          } else if (value === 0.2) {
+            return '有风险';
+          }
+          return '';
+        }
+      },
+      title: {
+        offsetCenter: [0, '-10%'],
+        fontSize: 20,
+        fontFamily: ''
+      },
+      detail: {
+        fontSize: 90,
+        offsetCenter: [0, '-35%'],
+        valueAnimation: true,
+        formatter: function (value) {
+          return Math.round(value * 100) + '';
+        },
+        color: 'inherit'
+      },
+      data: [{
+        value: accuracy,
+        name: 'Grade Rating'
+      }]
+    }]
+  };
+  barChart.setOption(barOption);
+  gaugeChart.setOption(gaugeOption);
+};
 
 // 初始化默认参数
 onMounted(() => {
@@ -133,27 +269,16 @@ const removeBox = (index) => {
 const userId = "user_123"; // 这里可以动态获取用户ID
 const getCurrentTime = () => {
   const now = new Date();
-  // 格式化为两位数，例如 3 → "03"
   const pad = (num) => String(num).padStart(2, '0');
-  // 合法字符格式：YYYY-MM-DD_HH-MM
   const year = now.getFullYear();
-  const month = pad(now.getMonth() + 1);    // 月份补零
-  const day = pad(now.getDate());           // 日期补零
-  const hours = pad(now.getHours());        // 小时补零
-  const minutes = pad(now.getMinutes());    // 分钟补零
-  // 替换非法字符：/ → -，: → -
+  const month = pad(now.getMonth() + 1);
+  const day = pad(now.getDate());
+  const hours = pad(now.getHours());
+  const minutes = pad(now.getMinutes());
   const safeTimeString = `${year}-${month}-${day}_${hours}-${minutes}`;
-  // alert(safeTimeString);
   return safeTimeString;
 };
 
-// 开始刺激
-// const startRun = () => {
-//   if (boxes.value.length === 0) return;
-//   isRunning.value = true;
-//   activeIndex.value = 0;
-//   startStimulus(activeIndex.value);
-// };
 const startRun = async () => {
   if (boxes.value.length === 0) return;
 
@@ -199,6 +324,7 @@ const processData = async () => {
 };
 
 const classifyData = async () => {
+  fileName.value = 'All';
   if (!fileName.value) {
     console.error("文件名为空，无法评估");
     return;
@@ -210,8 +336,19 @@ const classifyData = async () => {
     });
 
     if (response.status === 200) {
-      alert("评估成功:" + response.data);
-      console.log("评估成功:", response.data);
+      const result = response.data;
+      console.log("评估成功:", result);
+      
+      // 初始化并显示图表
+      showResults.value = true;
+      await nextTick();
+      initCharts();
+      
+      // 从结果中提取数据
+      const accuracy = result.final_valid_acc_list[0]; // 取第一个受试者的准确率
+      const scores = result.average_scores; // 直接使用average_scores，已经是百分比形式
+      
+      updateCharts(accuracy, scores);
     } else {
       console.error("评估失败:", response.data);
     }
@@ -220,17 +357,13 @@ const classifyData = async () => {
   }
 };
 
-
-
 // 启动单个刺激
 const startStimulus = (index) => {
   currentBox.value = boxes.value[index];
 
-  // 清除之前的定时器
   intervals.value.forEach((interval) => clearInterval(interval));
   intervals.value = [];
 
-  // 设置闪烁定时器
   if (flickerTexts.value || flickerBoxes.value) {
     const interval = setInterval(() => {
       currentBox.value.isBlack = !currentBox.value.isBlack;
@@ -238,7 +371,6 @@ const startStimulus = (index) => {
     intervals.value.push(interval);
   }
 
-  // 设置切换定时器
   const switchTimer = setTimeout(() => {
     if (activeIndex.value < boxes.value.length - 1) {
       activeIndex.value++;
@@ -264,6 +396,10 @@ onMounted(() => {
   window.addEventListener("resize", () => {
     if (isRunning.value) {
       fontSize.value = Math.min(window.innerWidth, window.innerHeight) * 0.3;
+    }
+    if (showResults.value) {
+      gaugeChart?.resize();
+      barChart?.resize();
     }
   });
 });
@@ -320,5 +456,19 @@ td {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.results-container {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+}
+
+.chart {
+  width: 500px;
+  height: 400px;
 }
 </style>
