@@ -57,10 +57,10 @@
 
         <div class="score-explanation">
           <h3>评分等级说明</h3>
-          <p><span style="color: green; font-weight: bold;">无风险（绿色）：</span> 评分 ≥ 50，表示用户在该频率下的视功能正常。</p>
+          <p><span style="color: green; font-weight: bold;">无风险（绿色）：</span> 评分 ≥ 50，表示用户的视功能正常。</p>
           <p><span style="color: orange; font-weight: bold;">中等风险（黄色）：</span> 33 ≤ 评分 &lt;
-            50，表示用户在该频率下的视功能可能存在轻微问题，建议关注。</p>
-          <p><span style="color: red; font-weight: bold;">有风险（红色）：</span> 评分 &lt; 33，表示用户在该频率下的视功能存在明显问题，建议进一步检查。</p>
+            50，表示用户的视功能可能存在轻微问题，有患青光眼风险，建议关注。</p>
+          <p><span style="color: red; font-weight: bold;">有风险（红色）：</span> 评分 &lt; 33，表示用户视功能存在明显问题，患青光眼风险高，建议进一步检查。</p>
         </div>
 
       </form>
@@ -78,7 +78,7 @@
       <p :class="scoreClass">
         您的评分为 <strong>{{ finalScore }}</strong>，属于
         <span v-if="finalScore >= 50" class="green-text">无风险（绿色）</span>
-        <span v-else-if="finalScore >= 33" class="yellow-text">中等风险（黄色）</span>
+        <span v-else-if="finalScore >= 33" class="yellow-text">低风险（黄色）</span>
         <span v-else class="red-text">有风险（红色）</span> 等级。
       </p>
       <p>{{ scoreAdvice }}</p>
@@ -387,9 +387,9 @@ const processData = async () => {
 //   }
 // };
 const classifyData = async () => {
-  fileName.value = 'All';
+//  fileName.value = 'All';
   if (!fileName.value) {
-    console.error("文件名为空，无法评估");
+    console.error("文件名为空。尚未进行数据收集处理，无法评估。");
     return;
   }
 
