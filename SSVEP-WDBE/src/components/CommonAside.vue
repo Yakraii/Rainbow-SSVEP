@@ -11,7 +11,7 @@
                     <div class="logo-con">
                         <img src="../../public/image/eye of horus.png" class="logo-img">
                     </div>
-                    <text>Eyes of Horus</text>
+                    <text>智医明眸</text>
                 </div>
             </el-header>
 
