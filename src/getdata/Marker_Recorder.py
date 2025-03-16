@@ -70,6 +70,7 @@ if __name__ == '__main__':
 
     try:
         init()
+        time.sleep(1) # 等待前端开始闪烁
         # 自动执行标记插入流程
         mark()
         time.sleep(3) # 等待数据稳定
