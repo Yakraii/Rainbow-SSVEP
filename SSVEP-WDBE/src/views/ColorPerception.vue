@@ -1,4 +1,3 @@
-
 <template>
   <div class="Detect">
     <!-- 设置页面 -->
@@ -20,12 +19,7 @@
               <tr v-for="(box, index) in boxes" :key="index">
                 <td>{{ index + 1 }}</td>
                 <td>
-                  <input
-                    type="number"
-                    v-model="box.frequency"
-                    placeholder="频率"
-                    step="0.01"
-                  />
+                  <input type="number" v-model="box.frequency" placeholder="频率" step="0.01" />
                 </td>
                 <td>
                   <input type="text" v-model="box.text" placeholder="文本" />
@@ -60,6 +54,15 @@
             <input type="checkbox" v-model="flickerBoxes" /> 闪烁盒子
           </label>
         </div>
+
+        <div class="score-explanation">
+          <h3>评分等级说明</h3>
+          <p><span style="color: green; font-weight: bold;">无风险（绿色）：</span> 评分 ≥ 50，表示用户在该频率下的视功能正常。</p>
+          <p><span style="color: orange; font-weight: bold;">中等风险（黄色）：</span> 33 ≤ 评分 &lt;
+            50，表示用户在该频率下的视功能可能存在轻微问题，建议关注。</p>
+          <p><span style="color: red; font-weight: bold;">有风险（红色）：</span> 评分 &lt; 33，表示用户在该频率下的视功能存在明显问题，建议进一步检查。</p>
+        </div>
+
       </form>
 
       <!-- 评估结果展示 -->
@@ -69,18 +72,28 @@
       </div>
     </div>
 
+    <!-- 评分结果解释 -->
+    <div v-if="finalScore !== null" class="score-explanation">
+      <h3>评估结果</h3>
+      <p :class="scoreClass">
+        您的评分为 <strong>{{ finalScore }}</strong>，属于
+        <span v-if="finalScore >= 50" class="green-text">无风险（绿色）</span>
+        <span v-else-if="finalScore >= 33" class="yellow-text">中等风险（黄色）</span>
+        <span v-else class="red-text">有风险（红色）</span> 等级。
+      </p>
+      <p>{{ scoreAdvice }}</p>
+    </div>
+
+
     <!-- 刺激页面 -->
     <div class="stim-page" v-if="isRunning" @click="stopRun">
       <div class="fullscreen">
-        <div
-          class="stimulus"
-          :style="{
-            fontWeight: boldFont ? 'bold' : 'normal',
-            fontSize: `${fontSize}px`,
-            backgroundColor: flickerBoxes ? (currentBox?.isBlack ? 'black' : 'white') : 'black',
-            color: flickerTexts ? (currentBox?.isBlack ? 'black' : 'white') : 'white',
-          }"
-        >
+        <div class="stimulus" :style="{
+          fontWeight: boldFont ? 'bold' : 'normal',
+          fontSize: `${fontSize}px`,
+          backgroundColor: flickerBoxes ? (currentBox?.isBlack ? 'black' : 'white') : 'black',
+          color: flickerTexts ? (currentBox?.isBlack ? 'black' : 'white') : 'white',
+        }">
           {{ currentBox?.text }}
         </div>
       </div>
@@ -99,6 +112,23 @@ const intervals = ref([]);
 const activeIndex = ref(-1);
 const currentBox = ref(null);
 const showResults = ref(false);
+const finalScore = ref(null);
+
+// 计算评分等级
+const scoreClass = computed(() => {
+  if (finalScore.value === null) return "";
+  if (finalScore.value >= 50) return "green-text";
+  if (finalScore.value >= 33) return "yellow-text";
+  return "red-text";
+});
+
+// 计算建议内容
+const scoreAdvice = computed(() => {
+  if (finalScore.value === null) return "请完成测试以查看您的评估结果。";
+  if (finalScore.value >= 50) return "您的视觉功能良好，无需担忧。";
+  if (finalScore.value >= 33) return "建议适当关注，避免长时间高频视觉刺激。";
+  return "建议尽快进行专业检查，以确保视功能健康。";
+});
 
 let gaugeChart = null;
 let barChart = null;
@@ -323,6 +353,39 @@ const processData = async () => {
   }
 };
 
+// const classifyData = async () => {
+//   fileName.value = 'All';
+//   if (!fileName.value) {
+//     console.error("文件名为空，无法评估");
+//     return;
+//   }
+
+//   try {
+//     const response = await axios.post("http://127.0.0.1:5000/classify", {
+//       file_name: fileName.value,
+//     });
+
+//     if (response.status === 200) {
+//       const result = response.data;
+//       console.log("评估成功:", result);
+
+//       // 初始化并显示图表
+//       showResults.value = true;
+//       await nextTick();
+//       initCharts();
+
+//       // 从结果中提取数据
+//       const accuracy = result.final_valid_acc_list[0]; // 取第一个受试者的准确率
+//       const scores = result.average_scores; // 直接使用average_scores，已经是百分比形式
+
+//       updateCharts(accuracy, scores);
+//     } else {
+//       console.error("评估失败:", response.data);
+//     }
+//   } catch (error) {
+//     console.error("评估请求错误:", error);
+//   }
+// };
 const classifyData = async () => {
   fileName.value = 'All';
   if (!fileName.value) {
@@ -338,16 +401,20 @@ const classifyData = async () => {
     if (response.status === 200) {
       const result = response.data;
       console.log("评估成功:", result);
-      
+
+      // 提取评分数据（假设后端返回 `final_valid_acc_list` 作为评分）
+      finalScore.value = result.final_valid_acc_list[0] * 100; // 乘100转换为百分制
+      console.log("最终得分:", finalScore.value);
+
       // 初始化并显示图表
       showResults.value = true;
       await nextTick();
       initCharts();
-      
+
       // 从结果中提取数据
       const accuracy = result.final_valid_acc_list[0]; // 取第一个受试者的准确率
       const scores = result.average_scores; // 直接使用average_scores，已经是百分比形式
-      
+
       updateCharts(accuracy, scores);
     } else {
       console.error("评估失败:", response.data);
@@ -471,4 +538,69 @@ td {
   width: 500px;
   height: 400px;
 }
+
+.score-explanation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* 左右居中 */
+  text-align: center;
+  font-size: 18px;
+  font-family: "Arial", sans-serif;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px 30px;
+  border-radius: 10px;
+  border: 2px solid #007bff;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 20px auto 0;
+  /* 上方间距 20px，自动水平居中 */
+}
+
+.score-explanation h3 {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.score-explanation p {
+  margin: 10px 0;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.green-text {
+  color: #008000;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.yellow-text {
+  color: #FFA500;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.red-text {
+  color: #FF0000;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.score-explanation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  font-size: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px 30px;
+  border-radius: 10px;
+  border: 2px solid #007bff;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 20px auto 0;
+}
+
 </style>
