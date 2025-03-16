@@ -1,4 +1,5 @@
 import argparse
+import json
 import numpy as np
 import Utils.EEGDataset as EEGDataset
 from sklearn.metrics import confusion_matrix
@@ -13,6 +14,7 @@ parser = argparse.ArgumentParser()
 '''
 Dial SSVEP Dataset
 '''
+parser.add_argument('--file_name', type=str, default='', help="name of the dataset")
 parser.add_argument('--dataset', type=str, default='Dial', help="12-class dataset")
 parser.add_argument('--ws', type=float, default=1.0, help="window size of ssvep")
 parser.add_argument('--Kf', type=int, default=1, help="k-fold cross validation")
@@ -41,8 +43,8 @@ for fold_num in range(opt.Kf):  # 遍历每个折叠
     final_valid_acc_list = []  # 存储每个折叠的验证准确率列表
     print(f"Training for K_Fold {fold_num + 1}")  # 打印当前折叠的训练信息
     for subject in range(1, opt.Ns + 1):  # 遍历每个受试者
-        train_dataset = EEGDataset.getSSVEP12Intra(subject, train_ratio=0.0, mode="train")  # 获取训练数据集
-        test_dataset = EEGDataset.getSSVEP12Intra(subject, train_ratio=0.0, mode="test")  # 获取测试数据集
+        train_dataset = EEGDataset.getSSVEP12Intra(subject, file_name = opt.file_name, train_ratio=0.0, mode="train")  # 获取训练数据集
+        test_dataset = EEGDataset.getSSVEP12Intra(subject, file_name = opt.file_name, train_ratio=0.0, mode="test")  # 获取测试数据集
 
         eeg_train, label_train = train_dataset[:]  # 获取训练数据和标签
         eeg_test, label_test = test_dataset[:]  # 获取测试数据和标签
@@ -60,7 +62,7 @@ for fold_num in range(opt.Kf):  # 遍历每个折叠
         targets = [7.5, 9.75, 10.25, 12.25, 14.25]
 
 
-        labels, predicted_labels = cca.cca_classify(targets, eeg_test, train_data=eeg_train, template=False)  # 进行CCA分类
+        labels, predicted_labels,average_scores = cca.cca_classify(targets, eeg_test, train_data=eeg_train, template=False)  # 进行CCA分类
         
         # print("labels:", labels)
         # print("predicted_labels:", predicted_labels)
@@ -70,6 +72,13 @@ for fold_num in range(opt.Kf):  # 遍历每个折叠
         print(f'Subject: {subject}, Classification Accuracy:{accuracy:.3f}')  # 打印当前受试者的分类准确率
         final_valid_acc_list.append(accuracy)  # 将当前受试者的准确率添加到验证准确率列表中
 
+    result = {
+        # "labels": labels.tolist(),
+        "average_scores": average_scores,
+        "final_valid_acc_list": final_valid_acc_list # 每个受试者的准确率
+        }
+    
+    print("RESULT:", json.dumps(result))  # 使用 RESULT: 标识 JSON 数据
     final_acc_list.append(final_valid_acc_list)  # 将当前折叠的验证准确率列表添加到最终准确率列表中
 
 # 3、Plot result

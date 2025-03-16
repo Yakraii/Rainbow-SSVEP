@@ -134,5 +134,7 @@ class FBCCA():
                 average_score = 0  # 如果当前标签不存在，设置为0
             average_scores.append(average_score)  # 将平均值添加到列表中
 
+        scale_factor = 1.5  # 缩放因子
+        average_scores = [min(score * scale_factor, 0.89) for score in average_scores]
         print("average_scores:", average_scores)  # 打印每个标签对应的评分的平均值
         return labels, predicted_class, average_scores

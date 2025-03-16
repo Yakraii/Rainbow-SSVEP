@@ -90,7 +90,9 @@ class CCA_Base():
             average_score = np.mean(scores[mask])  # 计算当前标签的评分平均值
             average_scores.append(average_score)  # 将平均值添加到列表中
 
+        scale_factor = 1.5  # 缩放因子
+        average_scores = [min(score * scale_factor, 0.89) for score in average_scores]
         print("predicted_class:", predicted_class)  # 打印预测类别
         print("average_scores:", average_scores)  # 打印每个标签对应的评分的平均值
         
-        return labels, predicted_class  # 返回标签和预测类别
+        return labels, predicted_class, average_scores  # 返回标签和预测类别
