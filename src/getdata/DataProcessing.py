@@ -70,6 +70,7 @@ def save_data(all_freq_data):
 
     # 保存结果
     print('save to:', os.path.join(prodata_path, args.file_name) + ".mat")
+    print("Save Successfully")
     scipy.io.savemat(os.path.join(prodata_path, args.file_name) + ".mat", {'processed_data': output})
 
 if __name__ == '__main__':
@@ -106,4 +107,4 @@ if __name__ == '__main__':
             all_freq_data[freq] = []
         all_freq_data[freq].append(processed_data)
     save_data(all_freq_data) # 保存数据
-
+    print("Save Successfully")
