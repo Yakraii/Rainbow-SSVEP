@@ -51,6 +51,7 @@ target/
 *.java~
 *.properties~
 *.xml~
+*._pycache_
 
 ### system ignore ###
 .DS_Store
