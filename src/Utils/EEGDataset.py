@@ -12,7 +12,7 @@ data_path = os.path.join(root_path, 'data', 'data_processed')
 # 定义一个继承自Dataset的类getSSVEP12Intra
 class getSSVEP12Intra(Dataset):
     # 初始化方法
-    def __init__(self,  subject=1, file_name = "merged_data.mat", train_ratio=0.8, KFold=None, n_splits=5, mode="train"):
+    def __init__(self,  subject=1, file_name = "merged_data", train_ratio=0.8, KFold=None, n_splits=5, mode="train"):
         super(getSSVEP12Intra, self).__init__()
         self.file_name = file_name
         self.train_ratio = train_ratio  # 训练集比例
