@@ -60,3 +60,4 @@ Servers
 .metadata
 upload
 gen_code
+/src/Model/__pycache__
