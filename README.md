@@ -1,4 +1,5 @@
 # Rainbow-SSVEP
+![Version](https://img.shields.io/badge/version-0.9.2-blue)  ![License](https://img.shields.io/badge/license-Apache%202.0-green)      ![Contributors](https://img.shields.io/github/contributors/Yakraii/Rainbow-SSVEP) ![Stars](https://img.shields.io/github/stars/Yakraii/Rainbow-SSVEP)
 
 ## 项目简介
 🌈Rainbow-SSVEP 是一个研究稳态视觉诱发电位 (SSVEP) 的项目。
@@ -6,8 +7,9 @@
 ## 目录
 - [安装](#安装)
 - [使用方法](#使用方法)
-- [贡献](#贡献)
-- [许可证](#许可证)
+- [贡献](#-贡献)
+- [联系](#-联系我们)
+- [许可证](#-许可证)
 
 ## 注意事项
 部分 Python 包 (例如brainflow) 需要使用我们提供的版本。
@@ -46,8 +48,13 @@ npm run dev
 python app.py
 ```
 
-## 贡献
+## 📬 联系我们 
+如果您有任何问题或建议，欢迎通过以下方式联系我：  
+- **GitHub Issues**：在 [Issues](https://github.com/your-username/your-repo/issues)  中提出你的问题。  
+- **Email**：发送邮件至 [yakraii@163.com](mailto:yakraii@163.com) ，我会尽快回复。
+
+## 🤝 贡献
 欢迎贡献！请阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 了解详细信息。
 
-## 许可证
-...
+## 📝 许可证
+本项目采用 Apache  2.0。
