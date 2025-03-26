@@ -62,7 +62,8 @@ def mark():
 if __name__ == '__main__':
     # 解析命令行参数
     parser = argparse.ArgumentParser()
-    parser.add_argument('--file_name', required=True)
+    parser.add_argument('--file_name', required=True) 
+    # 如果要加入自动修改ip的功能，在这里指定 'param.ip_address'，否则需要手动修改config.yaml
     args = parser.parse_args()
 
     # 使用传入的文件名
