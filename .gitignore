@@ -51,6 +51,7 @@ target/
 *.java~
 *.properties~
 *.xml~
+*._pycache_
 
 ### system ignore ###
 .DS_Store
@@ -59,3 +60,5 @@ Servers
 .metadata
 upload
 gen_code
+/src/Model/__pycache__
+*.pyc

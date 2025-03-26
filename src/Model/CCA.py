@@ -93,3 +93,40 @@ class CCA_Base():
         print("average_scores:", average_scores)  # 打印每个标签对应的评分的平均值
         
         return labels, predicted_class, average_scores  # 返回标签和预测类别
+
+    def compute_ITR(self, true_labels, predicted_labels):
+        """
+        计算信息传输率(Information Transfer Rate)
+        公式：ITR = [log₂N + Plog₂P + (1-P)log₂((1-P)/(N-1))] × (60/T)
+        其中：
+        - N：目标数量
+        - P：分类准确率
+        - T：单次试验时间（分钟）
+        """
+        # 转换标签为numpy数组
+        true_labels = np.array(true_labels)
+        predicted_labels = np.array(predicted_labels)
+        
+        # 计算准确率
+        P = np.mean(true_labels == predicted_labels)
+        print("P:", P)
+        # 获取参数
+        N = self.Nf          # 目标刺激数量
+        T = 100 / 60    # 将秒转换为分钟
+        
+        # 处理边界情况
+        if P == 0:
+            return 0.0
+        elif P == 1.0:
+            itr = np.log2(N) * (60 / T)
+        else:
+            term1 = np.log2(N)
+            term2 = P * np.log2(P)
+            term3 = (1-P) * np.log2((1-P)/(N-1))
+            itr = (term1 + term2 + term3) * (60 / T)
+            print("term1:", term1)
+            print("term2:", term2)
+            print("term3:", term3)
+
+        
+        return max(itr, 0)  # 确保ITR不为负值
