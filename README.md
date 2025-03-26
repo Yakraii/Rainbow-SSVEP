@@ -63,6 +63,6 @@ python app.py
 本项目采用 Apache  2.0。
 
 ## 📚 引用
-[1] [Canonical_Classifier By YuDongPan](https://github.com/YuDongPan/Canonical_Classifier)
+[1] [Canonical_Classifier By YuDongPan](https://github.com/YuDongPan/Canonical_Classifier)  
 [2] Nakanishi M, Wang YT, Jung TP, et al. Detecting Glaucoma With a Portable Brain-Computer Interface for Objective Assessment of Visual Function Loss. 
 https://jamanetwork.com/journals/jamaophthalmology/fullarticle/2621879
