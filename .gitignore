@@ -62,3 +62,4 @@ upload
 gen_code
 /src/Model/__pycache__
 *.pyc
+*.pyc
