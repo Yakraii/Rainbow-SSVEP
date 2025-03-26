@@ -2,67 +2,110 @@
   <div class="Detect">
     <!-- 设置页面 -->
     <div class="setup-page" v-if="!isRunning">
-      <h2>颜色感知检测</h2>
-      <form @submit.prevent="startRun">
-        <!-- 频率输入表格 -->
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>频率 (Hz)</th>
-                <th>文本</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(box, index) in boxes" :key="index">
-                <td>{{ index + 1 }}</td>
-                <td>
-                  <input type="number" v-model="box.frequency" placeholder="频率" step="0.01" />
-                </td>
-                <td>
-                  <input type="text" v-model="box.text" placeholder="文本" />
-                </td>
-                <td>
-                  <button type="button" @click="removeBox(index)">删除</button>
-                </td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="4">
-                  <button type="button" @click="addBox">添加</button>
-                  <button type="submit">开始</button>
-                  <button type="button" @click="processData">数据处理</button>
-                  <button type="button" @click="classifyData">评估</button>
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+      <h2>青光眼风险评估</h2>
+      <form @submit.prevent="startRun" class="setup-form">
+        <div class="form-grid">
+          <!-- 左侧设置区域 -->
+          <div class="settings-panel">
+            <!-- IP地址输入 -->
+            <div class="input-group">
+              <label>设备IP地址：</label>
+              <input type="text" v-model="deviceIP" placeholder="请输入设备IP地址" class="styled-input" />
+            </div>
+
+            <!-- 刺激范式选择 -->
+            <div class="input-group">
+              <label>刺激范式：</label>
+              <select v-model="selectedParadigm" class="styled-select">
+                <option value="text">文本闪烁刺激范式</option>
+                <option value="grating">光栅刺激范式</option>
+                <option value="checkerboard">棋盘格刺激范式</option>
+                <option value="concentric">同心环收缩-扩张运动刺激范式</option>
+              </select>
+            </div>
+
+            <!-- 额外设置 -->
+            <div class="settings-group">
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="boldFont" class="styled-checkbox" />
+                <span>加粗字体</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="flickerTexts" class="styled-checkbox" />
+                <span>闪烁文本</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="flickerBoxes" class="styled-checkbox" />
+                <span>闪烁盒子</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 右侧表格区域 -->
+          <div class="table-panel">
+            <div class="table-container">
+              <table class="styled-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>频率 (Hz)</th>
+                    <th>文本</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(box, index) in boxes" :key="index">
+                    <td>{{ index + 1 }}</td>
+                    <td>
+                      <input type="number" v-model="box.frequency" placeholder="频率" step="0.01" class="table-input" />
+                    </td>
+                    <td>
+                      <input type="text" v-model="box.text" placeholder="文本" class="table-input" />
+                    </td>
+                    <td>
+                      <button type="button" @click="removeBox(index)" class="btn-delete">删除</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
-        <!-- 额外设置 -->
-        <div class="settings">
-          <label>
-            <input type="checkbox" v-model="boldFont" /> 加粗字体
-          </label>
-          <label>
-            <input type="checkbox" v-model="flickerTexts" /> 闪烁文本
-          </label>
-          <label>
-            <input type="checkbox" v-model="flickerBoxes" /> 闪烁盒子
-          </label>
+        <!-- 底部按钮区域 -->
+        <div class="button-group">
+          <button type="button" @click="addBox" class="btn-primary">添加</button>
+          <button type="submit" class="btn-success">开始检测</button>
+          <button type="button" @click="processData" class="btn-info">数据处理</button>
+          <button type="button" @click="classifyData" class="btn-warning">评估</button>
         </div>
 
+        <!-- 数据处理进度条 -->
+        <div v-if="processing" class="progress-container">
+          <div class="progress-bar">
+            <div class="progress" :style="{ width: progress + '%' }"></div>
+          </div>
+          <div class="progress-text">数据处理进度：{{ progress }}%</div>
+        </div>
+
+        <!-- 评分说明 -->
         <div class="score-explanation">
           <h3>评分等级说明</h3>
-          <p><span style="color: green; font-weight: bold;">无风险（绿色）：</span> 评分 ≥ 50，表示用户的视功能正常。</p>
-          <p><span style="color: orange; font-weight: bold;">中等风险（黄色）：</span> 33 ≤ 评分 &lt;
-            50，表示用户的视功能可能存在轻微问题，有患青光眼风险，建议关注。</p>
-          <p><span style="color: red; font-weight: bold;">有风险（红色）：</span> 评分 &lt; 33，表示用户视功能存在明显问题，患青光眼风险高，建议进一步检查。</p>
+          <div class="score-grid">
+            <div class="score-item">
+              <span class="score-label green">无风险（绿色）：</span>
+              <span class="score-desc">评分 ≥ 50，表示用户的视功能正常。</span>
+            </div>
+            <div class="score-item">
+              <span class="score-label yellow">中等风险（黄色）：</span>
+              <span class="score-desc">33 ≤ 评分 &lt; 50，表示用户的视功能可能存在轻微问题。</span>
+            </div>
+            <div class="score-item">
+              <span class="score-label red">有风险（红色）：</span>
+              <span class="score-desc">评分 &lt; 33，表示用户视功能存在明显问题。</span>
+            </div>
+          </div>
         </div>
-
       </form>
 
       <!-- 评估结果展示 -->
@@ -105,6 +148,7 @@
 import { ref, computed, onMounted, nextTick } from "vue";
 import * as echarts from 'echarts';
 import axios from "axios";
+import { useRouter } from 'vue-router';
 
 const isRunning = ref(false);
 const boxes = ref([]);
@@ -134,7 +178,7 @@ let gaugeChart = null;
 let barChart = null;
 
 // 默认设置
-const presetFrequencies = [7.5, 9.75, 10.25, 12.25, 14.75];
+const presetFrequencies = [8, 9.75, 10.25, 12.25, 14.75];
 const presetTexts = ["A", "B", "C", "D", "E"];
 
 // 设置参数
@@ -146,6 +190,14 @@ const fontSize = computed(() => Math.min(window.innerWidth, window.innerHeight) 
 
 //文件名
 const fileName = ref("");
+
+// 新增响应式变量
+const deviceIP = ref("127.0.0.1");
+const selectedParadigm = ref("text");
+const processing = ref(false);
+const progress = ref(0);
+
+const router = useRouter();
 
 // 初始化图表
 const initCharts = () => {
@@ -336,11 +388,24 @@ const processData = async () => {
     return;
   }
 
+  processing.value = true;
+  progress.value = 0;
+
   try {
+    // 模拟进度更新
+    const progressInterval = setInterval(() => {
+      if (progress.value < 100) {
+        progress.value += 10;
+      }
+    }, 500);
+
     const response = await axios.post("http://127.0.0.1:5000/process_data", {
       file_name: fileName.value,
       frequencies: boxes.value.map(box => box.frequency),
     });
+
+    clearInterval(progressInterval);
+    progress.value = 100;
 
     if (response.status === 200) {
       alert("数据处理成功:" + response.data);
@@ -350,77 +415,68 @@ const processData = async () => {
     }
   } catch (error) {
     console.error("数据处理请求错误:", error);
+  } finally {
+    setTimeout(() => {
+      processing.value = false;
+      progress.value = 0;
+    }, 1000);
   }
 };
 
-// const classifyData = async () => {
-//   fileName.value = 'All';
-//   if (!fileName.value) {
-//     console.error("文件名为空，无法评估");
-//     return;
-//   }
-
-//   try {
-//     const response = await axios.post("http://127.0.0.1:5000/classify", {
-//       file_name: fileName.value,
-//     });
-
-//     if (response.status === 200) {
-//       const result = response.data;
-//       console.log("评估成功:", result);
-
-//       // 初始化并显示图表
-//       showResults.value = true;
-//       await nextTick();
-//       initCharts();
-
-//       // 从结果中提取数据
-//       const accuracy = result.final_valid_acc_list[0]; // 取第一个受试者的准确率
-//       const scores = result.average_scores; // 直接使用average_scores，已经是百分比形式
-
-//       updateCharts(accuracy, scores);
-//     } else {
-//       console.error("评估失败:", response.data);
-//     }
-//   } catch (error) {
-//     console.error("评估请求错误:", error);
-//   }
-// };
 const classifyData = async () => {
-//  fileName.value = 'All';
+  fileName.value = "All";
   if (!fileName.value) {
+    alert("文件名为空。请先进行数据采集和处理，再进行评估。");
     console.error("文件名为空。尚未进行数据收集处理，无法评估。");
     return;
   }
 
+  processing.value = true;
+  progress.value = 0;
+  
   try {
+    // 模拟进度更新
+    const progressInterval = setInterval(() => {
+      if (progress.value < 90) {
+        progress.value += 5;
+      }
+    }, 200);
+    
+    console.log("发送评估请求，文件名:", fileName.value);
     const response = await axios.post("http://127.0.0.1:5000/classify", {
       file_name: fileName.value,
+      dataset: 'Dial',  // 添加数据集参数
+      ws: 3.5,         // 窗口大小
+      Nh: 25,          // 试验次数
+      Fs: 250,         // 采样频率
+      Ns: 1,           // 受试者数量
+      Kf: 1,           // K折交叉验证
+      Nf: 5,           // 刺激数量
+      targets: boxes.value.map(box => box.frequency)  // 添加目标频率列表
     });
 
+    clearInterval(progressInterval);
+    progress.value = 100;
+
     if (response.status === 200) {
-      const result = response.data;
-      console.log("评估成功:", result);
-
-      // 提取评分数据（假设后端返回 `final_valid_acc_list` 作为评分）
-      finalScore.value = result.final_valid_acc_list[0] * 100; // 乘100转换为百分制
-      console.log("最终得分:", finalScore.value);
-
-      // 初始化并显示图表
-      showResults.value = true;
-      await nextTick();
-      initCharts();
-
-      // 从结果中提取数据
-      const accuracy = result.final_valid_acc_list[0]; // 取第一个受试者的准确率
-      const scores = result.average_scores; // 直接使用average_scores，已经是百分比形式
-
-      updateCharts(accuracy, scores);
+      console.log("评估成功，跳转到结果页面");
+      
+      // 直接跳转到结果页面，不传递参数
+      router.push({
+        name: 'AssessmentReport'
+      });
     } else {
       console.error("评估失败:", response.data);
+      alert("评估失败: " + (response.data?.message || "未知错误"));
     }
   } catch (error) {
     console.error("评估请求错误:", error);
+    alert("评估请求错误: " + (error.response?.data?.message || error.message || "未知错误"));
+  } finally {
+    setTimeout(() => {
+      processing.value = false;
+      progress.value = 0;
+    }, 1000);
   }
 };
 
@@ -475,32 +531,243 @@ onMounted(() => {
 <style scoped>
 .Detect {
   text-align: center;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #f5f7fa;
 }
 
-.table-container {
+.setup-page {
+  padding: 10px;
+  max-width: 1600px;  /* 增加最大宽度 */
+  margin: 0 auto;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.setup-form {
+  background: white;
+  padding: 30px;  /* 增加内边距 */
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 400px 1fr;  /* 增加左侧宽度 */
+  gap: 30px;  /* 增加间距 */
+  margin-bottom: 30px;
+}
+
+.settings-panel {
   display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
+  flex-direction: column;
+  gap: 25px;  /* 增加间距 */
+  padding: 20px;  /* 添加内边距 */
+  background: #f9fafc;
+  border-radius: 8px;
 }
 
-table {
-  border-collapse: collapse;
-  width: 60%;
-  text-align: center;
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-th,
-td {
-  border: 1px solid #ccc;
+.input-group label {
+  font-size: 16px;  /* 增大字体 */
+  font-weight: 500;
+  color: #303133;
+}
+
+.styled-input, .styled-select {
+  padding: 12px 16px;  /* 增加输入框大小 */
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  font-size: 16px;  /* 增大字体 */
+}
+
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 15px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #ebeef5;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;  /* 增大字体 */
+  padding: 8px 0;
+}
+
+.styled-checkbox {
+  width: 20px;  /* 增大复选框 */
+  height: 20px;
+}
+
+h2 {
+  font-size: 28px;  /* 增大标题 */
+  margin-bottom: 10px;
+  color: #303133;
+}
+
+.table-panel {
+  background: white;
+  border-radius: 4px;
   padding: 10px;
 }
 
-.settings {
+.styled-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: white;
+}
+
+.styled-table th {
+  background: #f5f7fa;
+  color: #606266;
+  font-weight: 600;
+  padding: 12px 8px;
+  border-bottom: 2px solid #ebeef5;
+}
+
+.styled-table td {
+  padding: 8px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.table-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.btn-primary, .btn-success, .btn-info, .btn-warning, .btn-delete {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-primary {
+  background: #409eff;
+  color: white;
+}
+
+.btn-success {
+  background: #67c23a;
+  color: white;
+}
+
+.btn-info {
+  background: #909399;
+  color: white;
+}
+
+.btn-warning {
+  background: #e6a23c;
+  color: white;
+}
+
+.btn-delete {
+  background: #f56c6c;
+  color: white;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.btn-primary:hover, .btn-success:hover, .btn-info:hover, .btn-warning:hover, .btn-delete:hover {
+  opacity: 0.8;
+}
+
+.progress-container {
+  margin: 15px auto;
+  width: 80%;
+  max-width: 600px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #ebeef5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress {
+  height: 100%;
+  background-color: #67c23a;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #909399;
+}
+
+.score-explanation {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f5f7fa;
+  border-radius: 4px;
+}
+
+.score-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.score-item {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  gap: 5px;
+}
+
+.score-label {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.score-desc {
+  font-size: 12px;
+  color: #606266;
+}
+
+.score-label.green { color: #67c23a; }
+.score-label.yellow { color: #e6a23c; }
+.score-label.red { color: #f56c6c; }
+
+.results-container {
   margin-top: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+}
+
+.chart {
+  width: 500px;
+  height: 400px;
 }
 
 .fullscreen {
@@ -524,83 +791,4 @@ td {
   align-items: center;
   justify-content: center;
 }
-
-.results-container {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  gap: 40px;
-}
-
-.chart {
-  width: 500px;
-  height: 400px;
-}
-
-.score-explanation {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  /* 左右居中 */
-  text-align: center;
-  font-size: 18px;
-  font-family: "Arial", sans-serif;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 20px 30px;
-  border-radius: 10px;
-  border: 2px solid #007bff;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  max-width: 600px;
-  margin: 20px auto 0;
-  /* 上方间距 20px，自动水平居中 */
-}
-
-.score-explanation h3 {
-  font-size: 22px;
-  font-weight: bold;
-  margin-bottom: 12px;
-  color: #333;
-}
-
-.score-explanation p {
-  margin: 10px 0;
-  font-weight: 500;
-  line-height: 1.5;
-}
-
-.green-text {
-  color: #008000;
-  font-weight: bold;
-  font-size: 20px;
-}
-
-.yellow-text {
-  color: #FFA500;
-  font-weight: bold;
-  font-size: 20px;
-}
-
-.red-text {
-  color: #FF0000;
-  font-weight: bold;
-  font-size: 20px;
-}
-
-.score-explanation {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  font-size: 18px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 20px 30px;
-  border-radius: 10px;
-  border: 2px solid #007bff;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  max-width: 600px;
-  margin: 20px auto 0;
-}
-
 </style>

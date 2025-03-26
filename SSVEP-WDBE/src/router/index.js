@@ -16,6 +16,7 @@ import SensitivityTesting from '@/views/SensitivityTesting.vue'
 import GlaucomaTest from '@/views/GlaucomaTest.vue'
 import CataractDetection from '@/views/CataractDetection.vue'
 import MacularTest from '@/views/MacularTest.vue'
+import AssessmentReport from '@/views/AssessmentReport.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -115,6 +116,11 @@ const router = createRouter({
         },
       ]
     },
+    {
+      path: '/assessment-report',
+      name: 'AssessmentReport',
+      component: AssessmentReport
+    }
   ]
 })
 
