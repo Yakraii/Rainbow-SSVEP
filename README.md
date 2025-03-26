@@ -1,5 +1,5 @@
 # Rainbow-SSVEP
-![Version](https://img.shields.io/badge/version-0.9.2-blue)  ![License](https://img.shields.io/badge/license-Apache%202.0-green)      ![Contributors](https://img.shields.io/github/contributors/Yakraii/Rainbow-SSVEP) ![Stars](https://img.shields.io/github/stars/Yakraii/Rainbow-SSVEP)
+![Version](https://img.shields.io/badge/version-0.9.2-blue)  ![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python&color=3776AB&labelColor=FFD43B) ![License](https://img.shields.io/badge/license-Apache%202.0-green)      ![Contributors](https://img.shields.io/github/contributors/Yakraii/Rainbow-SSVEP) ![Stars](https://img.shields.io/github/stars/Yakraii/Rainbow-SSVEP)
 
 ## 项目简介
 🌈Rainbow-SSVEP 是一个研究稳态视觉诱发电位 (SSVEP) 的项目。
